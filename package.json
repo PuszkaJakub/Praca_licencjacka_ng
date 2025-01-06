@@ -24,6 +24,7 @@
     "@angular/ssr": "^19.0.2",
     "@googlemaps/js-api-loader": "^1.16.8",
     "@googlemaps/markerclusterer": "^2.5.3",
+    "@types/leaflet": "^1.9.15",
     "express": "^4.18.2",
     "leaflet": "^1.9.4",
     "rxjs": "~7.8.0",

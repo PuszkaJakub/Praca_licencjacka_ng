@@ -13,7 +13,7 @@ import { KitchenPanelComponent } from './kitchen-panel/kitchen-panel.component';
 export class AppComponent {
   title = 'MozzaNG';
   routeInfo: number[] = [];
-  panel: string = 'kitchen'
+  panel: string = 'waiter'
 
   constructor(
     private nominatim: NominatimService,
@@ -22,15 +22,17 @@ export class AppComponent {
   searchAddress(address: string) {
     this.nominatim.search(address).subscribe((nominatimResponse: any) => {
       if (nominatimResponse !== undefined && nominatimResponse !== null) {
-        const coordinates = [
-          nominatimResponse[0].lat,
-          nominatimResponse[0].lon,
-        ];
         this.graphhopper
-          .search(`${coordinates[0]},${coordinates[1]}`)
+          .search(`${nominatimResponse[0].lat},${nominatimResponse[0].lon}`)
           .subscribe((graphhopperResponse: any) => {
-            this.routeInfo[0] = parseFloat(graphhopperResponse.paths[0].distance);
-            this.routeInfo[1] = parseFloat(graphhopperResponse.paths[0].time);
+            console.log('infoooo kurr' + graphhopperResponse)
+            const value: number[] = []
+            value[0] = parseFloat(graphhopperResponse.paths[0].distance);
+            value[1] = parseFloat(graphhopperResponse.paths[0].time);
+            value[2] = nominatimResponse[0].lat;
+            value[3] = nominatimResponse[0].lon;
+            this.routeInfo = value;
+
           });
       } else {
         alert('Błąd związany z zamianą adresu na współrzędne');

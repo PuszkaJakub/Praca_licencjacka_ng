@@ -20,7 +20,11 @@
             <label for="delivery">🚚 Dostawa (km x 3zł) - wyszukaj adres:</label>
             <input (input)="onAddressInput($event)" id="delivery" type="text" placeholder="Wpisz adres">
             @if(mapShow){
-            <p>Dziala</p>
+            <div class="map-container">
+                <div class="map-frame">
+                 <div id="map"></div>
+                </div>
+            </div>
             <button (click)="addDelivery()" class="summary-delivery--addBtn">Dodaj</button>
             }
             @if(!mapShow){

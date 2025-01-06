@@ -1,4 +1,5 @@
 import { Component, Output, EventEmitter, Input } from '@angular/core';
+import { Inject, PLATFORM_ID } from '@angular/core';
 
 class Pizza {
   name: string;
@@ -59,14 +60,53 @@ const menu: Pizza[] = [
 })
 export class WaiterPanelComponent {
   @Output() searchAddress = new EventEmitter<string>();
-  @Input() routeInfo: number[] = [];
+  
+  private _routeInfo: number[] = [];
+  public get routeInfo(): number[] {
+    return this._routeInfo;
+  }
+  @Input()
+  public set routeInfo(value: number[]) {
+    this._routeInfo = value;
+    console.log(value)
+
+    if(value.length){
+      this.mapShow = true;
+      import('leaflet').then(L => {
+        this.initMap(L);
+      });   
+    }
+
+  }
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+  private map: any;
+
+  // Leaflet map
+  private initMap(L: typeof import('leaflet')): void {
+    this.map = L.map('map', {
+      center: [this.routeInfo[2],this.routeInfo[3]],
+      zoom: 20
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(this.map);
+    
+    const marker = L.marker([this.routeInfo[2],this.routeInfo[3]]).addTo(this.map);
+    marker.bindPopup(`Odległość: ${this.routeInfo[0]/1000}km, czas dojazdu: ${this.routeInfo[1]}`).openPopup();
+  }
 
   numberOfProducts: number = 0;
   orderTotal: number = 0;
   menuList: Pizza[] = menu;
   orderList: OrderItem[] = [];
   addressToSearch: string = '';
-  mapShow = false
+  mapShow = false;
+
+  // public get mapShow() {
+  //   return this.routeInfo.length;
+  // }
 
   addItemToOrder(event: Event) {
     const a = event.target as HTMLElement;
@@ -97,7 +137,6 @@ export class WaiterPanelComponent {
 
   clearOrder() {
     this.orderList = [];
-    
   }
 
   addExtraItemToOrder(inputExtra: HTMLInputElement) {
@@ -115,7 +154,6 @@ export class WaiterPanelComponent {
     if(this.addressToSearch !== null && this.addressToSearch !== ''){
       console.log(this.addressToSearch);
       this.searchAddress.emit(this.addressToSearch);
-      this.mapShow = true;
     }
     else{
       alert("Pole nie może być puste");
@@ -130,6 +168,10 @@ export class WaiterPanelComponent {
   addDelivery(){
     console.log(this.routeInfo[0]/1000)
     const deliveryPrice = (this.routeInfo[0]/1000)*3
-    this.orderList.push(new OrderItem(`Dostawa - ${this.addressToSearch}`, (this.routeInfo[0]/1000)*3))
+    this.orderList.push(new OrderItem(`Dostawa - ${this.addressToSearch}`, Math.round(this.routeInfo[0]/1000)*3))
+    this.addressToSearch = '';
+    this.mapShow = false;
   }
+
+
 }
