@@ -1,0 +1,58 @@
+<div class="wrapper">
+    <h1>Pizzo-obliczator</h1>
+    <div class="panel">
+        @for (menuItem of menuList; track menuItem.name){
+        <button class="panel-item" [attr.data-price]="menuItem.price" (click)="addItemToOrder($event)">
+            {{menuItem.number}}. {{menuItem.name}}
+        </button>
+        }
+    </div>
+
+    <div class="summary">
+        <div class="summary-extra">
+            <label for="extra">Inne (zł):</label>
+            <input #inputExtra id="extra" type="number" placeholder="Inne">
+            <button (click)="addExtraItemToOrder(inputExtra)" class="extra-btn">Dodaj</button>
+        </div>
+
+
+        <div class="summary-delivery">
+            <label for="delivery">🚚 Dostawa (km x 3zł) - wyszukaj adres:</label>
+            <input (input)="onAddressInput($event)" id="delivery" type="text" placeholder="Wpisz adres">
+            @if(mapShow){
+            <p>Dziala</p>
+            <button (click)="addDelivery()" class="summary-delivery--addBtn">Dodaj</button>
+            }
+            @if(!mapShow){
+            <button (click)="searchLocalisation()">Wyszukaj</button>
+            }
+        </div>
+    </div>
+
+    <div class="products-list">
+        <p [attr.value]="numberOfProducts" class="products-list-counter">Liczba elementów: {{getNumberOfProducts()}}</p>
+        <ul>
+            @for(orderItem of orderList; track $index){
+            <li>
+                {{orderItem.name}}
+                <p>{{orderItem.price}} zł</p>
+                <div>
+                    <button (click)="removeOrderItem($index)"
+                        class="products-list-button products-list-button-remove">Usuń</button>
+                    <button (click)="editOrderItem($index)"
+                        class="products-list-button products-list-button-remove">Edytuj</button>
+
+                </div>
+            </li>
+            }
+        </ul>
+        <p>Suma zamówienia: </p>
+        <p class="products-list-result" [attr.value]="orderTotal">{{getOrderTotal()}} zł </p>
+        <div>
+            <button (click)="clearOrder()" class="products-list-button products-list-button-clear">Wyczyść</button>
+            @if(orderList.length){
+                <button (click)="clearOrder()" class="products-list-button products-list-button-save">Gotowe</button>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,15 @@
+<div class="wrapper">
+    <div class="orders">
+        @for (order of orderList; track order.dateDeliver){
+    
+            <div class="order">
+                <p class="order-type">{{order.type}}</p>
+                <p class="order-time">{{order.dateDeliver}}</p>
+                <p class="order-products">{{order.products}}</p>
+                <p class="order-address">{{order.address}}</p>
+                <button class="order-button">Gotowe</button>
+            </div>
+        }
+    </div>
+
+</div>

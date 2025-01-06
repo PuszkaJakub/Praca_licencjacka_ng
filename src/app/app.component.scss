@@ -1,0 +1,27 @@
+.navigate {
+  position: fixed;
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  background-color: antiquewhite;
+  width: 100%;
+  top: 0;
+  left: 0;
+  z-index: 100;
+
+  &-button {
+    margin: 0 0.5em;
+    padding: 1em 2em;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    background-color: var(--mint);
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.content {
+  padding-top: 6rem;
+}

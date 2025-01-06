@@ -1,0 +1,67 @@
+.wrapper {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	width: 90vw;
+	min-width: 350px;
+	padding: 0.2em;
+}
+
+.orders{
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.order {
+    margin: 2rem;
+    width: 200px;
+    border: 1px solid black;
+    font-family: Arial, sans-serif;
+}
+
+.order-type {
+    background-color: #fce2ba; /* Light orange */
+    text-align: center;
+    padding: 5px;
+    font-weight: bold;
+    border-bottom: 1px solid black;
+}
+
+.order-time {
+    text-align: center;
+    padding: 5px;
+    font-size: 14px;
+    border-bottom: 1px solid black;
+}
+
+.order-products {
+    text-align: center;
+    font-size: 16px;
+    padding: 20px 5px;
+    border-bottom: 1px solid black;
+}
+
+.order-address {
+    text-align: center;
+    font-size: 14px;
+    padding: 5px;
+    border-bottom: 1px solid black;
+}
+
+.order-button {
+    display: block;
+    width: 100%;
+    background-color: #007bff; /* Blue */
+    color: white;
+    font-size: 16px;
+    text-align: center;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+.order-button:hover {
+    background-color: #0056b3; /* Darker blue */
+}
