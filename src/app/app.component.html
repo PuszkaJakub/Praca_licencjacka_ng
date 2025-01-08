@@ -5,10 +5,6 @@
 </div>
 
 <div class="content">
-    @if(panel==='waiter'){
-    <app-waiter-panel [routeInfo]="routeInfo" (searchAddress)="searchAddress($event)"></app-waiter-panel>
-    }
-    @else if(panel==='kitchen'){
-    <app-kitchen-panel></app-kitchen-panel>
-    }
+    <app-waiter-panel [hidden]="panel!=='waiter'" [routeInfo]="routeInfo" (searchAddress)="searchAddress($event)"></app-waiter-panel>
+    <app-kitchen-panel [hidden]="panel!=='kitchen'"></app-kitchen-panel>
 </div>

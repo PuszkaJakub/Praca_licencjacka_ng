@@ -60,3 +60,9 @@
         </div>
     </div>
 </div>
+
+<ul>
+    @for (item of itemsa | async; track item) {
+      {{item}}
+    }
+  </ul>

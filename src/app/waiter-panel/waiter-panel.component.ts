@@ -1,5 +1,9 @@
-import { Component, Output, EventEmitter, Input } from '@angular/core';
+import { Component, Output, EventEmitter, Input, inject } from '@angular/core';
 import { Inject, PLATFORM_ID } from '@angular/core';
+import { Observable } from 'rxjs';
+import { Firestore, collection, collectionData, getDocs } from '@angular/fire/firestore';
+import { AsyncPipe } from '@angular/common';
+import { environment } from '../../environments/environment';
 
 class Pizza {
   name: string;
@@ -54,13 +58,14 @@ const menu: Pizza[] = [
 
 @Component({
   selector: 'app-waiter-panel',
-  imports: [],
+  standalone: true,
+  imports: [AsyncPipe],
   templateUrl: './waiter-panel.component.html',
   styleUrl: './waiter-panel.component.scss',
 })
 export class WaiterPanelComponent {
   @Output() searchAddress = new EventEmitter<string>();
-  
+
   private _routeInfo: number[] = [];
   public get routeInfo(): number[] {
     return this._routeInfo;
@@ -68,45 +73,66 @@ export class WaiterPanelComponent {
   @Input()
   public set routeInfo(value: number[]) {
     this._routeInfo = value;
-    console.log(value)
 
-    if(value.length){
+
+    if (value.length) {
       this.mapShow = true;
-      import('leaflet').then(L => {
+      import('leaflet').then((L) => {
         this.initMap(L);
-      });   
+      });
     }
-
   }
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+  numberOfProducts: number;
+  orderTotal: number;
+  menuList: Pizza[];
+  orderList: OrderItem[];
+  addressToSearch: string;
+  mapShow: boolean;
+
+  private firestore = inject(Firestore);
+  itemsa: Observable<any[]>;
+
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+  ) {
+    this.numberOfProducts = 0;
+    this.orderTotal = 0;
+    this.menuList = menu;
+    this.orderList = [];
+    this.addressToSearch = '';
+    this.mapShow = false;
+
+    const aCollection = getDocs(collection(this.firestore, 'items'));
+    console.log(aCollection)
+
+    this.itemsa = collectionData(collection(this.firestore, 'items')) as Observable<any[]>;    
+  }
   private map: any;
 
   // Leaflet map
   private initMap(L: typeof import('leaflet')): void {
     this.map = L.map('map', {
-      center: [this.routeInfo[2],this.routeInfo[3]],
-      zoom: 20
+      center: [this.routeInfo[2], this.routeInfo[3]],
+      zoom: 20,
     });
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(this.map);
-    
-    const marker = L.marker([this.routeInfo[2],this.routeInfo[3]]).addTo(this.map);
-    marker.bindPopup(`Odległość: ${this.routeInfo[0]/1000}km, czas dojazdu: ${this.routeInfo[1]}`).openPopup();
+
+    const marker = L.marker([this.routeInfo[2], this.routeInfo[3]]).addTo(
+      this.map
+    );
+    marker
+      .bindPopup(
+        `Odległość: ${(this.routeInfo[0] / 1000).toFixed(
+          2
+        )} km, czas dojazdu: ${Math.ceil(this.routeInfo[1] / 60000)} min`
+      )
+      .openPopup();
   }
-
-  numberOfProducts: number = 0;
-  orderTotal: number = 0;
-  menuList: Pizza[] = menu;
-  orderList: OrderItem[] = [];
-  addressToSearch: string = '';
-  mapShow = false;
-
-  // public get mapShow() {
-  //   return this.routeInfo.length;
-  // }
 
   addItemToOrder(event: Event) {
     const a = event.target as HTMLElement;
@@ -131,12 +157,11 @@ export class WaiterPanelComponent {
     this.orderList.splice(index, 1);
   }
 
-  editOrderItem(index: number) {
-
-  }
+  editOrderItem(index: number) {}
 
   clearOrder() {
     this.orderList = [];
+    // console.log(this.itemsa)
   }
 
   addExtraItemToOrder(inputExtra: HTMLInputElement) {
@@ -151,12 +176,11 @@ export class WaiterPanelComponent {
   }
 
   searchLocalisation() {
-    if(this.addressToSearch !== null && this.addressToSearch !== ''){
+    if (this.addressToSearch !== null && this.addressToSearch !== '') {
       console.log(this.addressToSearch);
       this.searchAddress.emit(this.addressToSearch);
-    }
-    else{
-      alert("Pole nie może być puste");
+    } else {
+      alert('Pole nie może być puste');
     }
   }
 
@@ -165,13 +189,16 @@ export class WaiterPanelComponent {
     this.addressToSearch = value;
   }
 
-  addDelivery(){
-    console.log(this.routeInfo[0]/1000)
-    const deliveryPrice = (this.routeInfo[0]/1000)*3
-    this.orderList.push(new OrderItem(`Dostawa - ${this.addressToSearch}`, Math.round(this.routeInfo[0]/1000)*3))
+  addDelivery() {
+    console.log(this.routeInfo[0] / 1000);
+    const deliveryPrice = (this.routeInfo[0] / 1000) * 3;
+    this.orderList.push(
+      new OrderItem(
+        `Dostawa - ${this.addressToSearch}`,
+        Math.round(this.routeInfo[0] / 1000) * 3
+      )
+    );
     this.addressToSearch = '';
     this.mapShow = false;
   }
-
-
 }
