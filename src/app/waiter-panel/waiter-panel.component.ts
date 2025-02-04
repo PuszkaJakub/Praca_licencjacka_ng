@@ -1,9 +1,10 @@
 import { Component, Output, EventEmitter, Input, inject } from '@angular/core';
 import { Inject, PLATFORM_ID } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Firestore, collection, collectionData, getDocs } from '@angular/fire/firestore';
 import { AsyncPipe } from '@angular/common';
 import { environment } from '../../environments/environment';
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
 
 class Pizza {
   name: string;
@@ -28,34 +29,6 @@ class OrderItem {
   }
 }
 
-const menu: Pizza[] = [
-  new Pizza('Margheritta', 1, 'Wege', 33),
-  new Pizza('Mozza', 2, 'Wege', 37),
-  new Pizza('Grilled Garden', 3, 'Wege', 40),
-  new Pizza('Pesto (bez mozzarelli)', 4, 'Wege', 40),
-  new Pizza('Popey', 5, 'Wege', 40),
-  new Pizza('Quattro Formaggi', 6, 'Wege', 41),
-  new Pizza('Greco (bianca, bez sosu)', 7, 'Wege', 41),
-  new Pizza('Sweet Balsamico', 7.1, 'Wege', 41),
-  new Pizza('Quattro Colori', 7.2, 'Wege', 41),
-  new Pizza('Italian Lover', 8, 'Z Mięskiem', 41),
-  new Pizza('Crudo', 9, 'Z Mięskiem', 41),
-  new Pizza('Diesel Rider', 10, 'Z Mięskiem', 41),
-  new Pizza('Capriciosa', 11, 'Z Mięskiem', 41),
-  new Pizza('Hells Bells', 12, 'Z Mięskiem', 41),
-  new Pizza('Jalapeno Honey', 13, 'Z Mięskiem', 41),
-  new Pizza('Hot Honey', 13.1, 'Z Mięskiem', 41),
-  new Pizza('Pancetta Funghi', 14, 'Z Mięskiem', 41),
-  new Pizza('Pancetta Rosmarino', 15, 'Z Mięskiem', 41),
-  new Pizza('Spianata Piccante', 16, 'Z Mięskiem', 37),
-  new Pizza('Bambini Felici', 17, 'Z Mięskiem', 41),
-  new Pizza('Costarica', 18, 'Z Mięskiem', 41),
-  new Pizza('Tonno', 19, 'Z Owocami Morza', 44),
-  new Pizza('Forrest Gump', 20, 'Z Owocami Morza', 44),
-  new Pizza('Frutti di Mare (bez mozzarelli)', 21, 'Z Owocami Morza', 41),
-  new Pizza('Alla Puttanesca (bez mozzarelli)', 22, 'Z Owocami Morza', 40),
-];
-
 @Component({
   selector: 'app-waiter-panel',
   standalone: true,
@@ -74,7 +47,6 @@ export class WaiterPanelComponent {
   public set routeInfo(value: number[]) {
     this._routeInfo = value;
 
-
     if (value.length) {
       this.mapShow = true;
       import('leaflet').then((L) => {
@@ -90,23 +62,22 @@ export class WaiterPanelComponent {
   addressToSearch: string;
   mapShow: boolean;
 
-  private firestore = inject(Firestore);
-  itemsa: Observable<any[]>;
+  app = initializeApp(environment.firebaseConfig);
+  db = getFirestore(this.app);
 
   constructor(
-    @Inject(PLATFORM_ID) private platformId: Object,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.numberOfProducts = 0;
     this.orderTotal = 0;
-    this.menuList = menu;
+    const pizzaList = this.fetchData();
+    this.menuList = [];
     this.orderList = [];
     this.addressToSearch = '';
     this.mapShow = false;
 
-    const aCollection = getDocs(collection(this.firestore, 'items'));
-    console.log(aCollection)
+    
 
-    this.itemsa = collectionData(collection(this.firestore, 'items')) as Observable<any[]>;    
   }
   private map: any;
 
@@ -159,10 +130,15 @@ export class WaiterPanelComponent {
 
   editOrderItem(index: number) {}
 
-  clearOrder() {
-    this.orderList = [];
-    // console.log(this.itemsa)
+  items: any[] = [];
+  async clearOrder() {
+    const ala = collection(this.db, 'Menu' )
+    const snap = await getDocs(ala);
+    const list = snap.docs.map(doc => doc.data())
+    console.log(list)
   }
+
+
 
   addExtraItemToOrder(inputExtra: HTMLInputElement) {
     console.log(inputExtra.value);
@@ -200,5 +176,14 @@ export class WaiterPanelComponent {
     );
     this.addressToSearch = '';
     this.mapShow = false;
+  }
+
+  async fetchData(){
+    const data = await getDocs(collection(this.db, 'Menu' ));
+    const dataList = data.docs.map(doc => {
+      const record = doc.data();
+      return new Pizza(record['name'], record['number'], record['category'], record['price'])
+    })
+    this.menuList = dataList;
   }
 }
