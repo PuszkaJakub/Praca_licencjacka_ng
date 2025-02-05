@@ -36,19 +36,19 @@
 
 
             @if(orderType == 'Dostawa'){
-                <label for="delivery">🚚 Dostawa (km x 3zł) - wyszukaj adres:</label>
-                <input (input)="onAddressInput($event)" id="delivery" type="text" placeholder="Wpisz adres">
-                @if(mapShow){
-                <div class="map-container">
-                    <div class="map-frame">
-                     <div id="map"></div>
-                    </div>
+            <label for="delivery">🚚 Dostawa (km x 3zł) - wyszukaj adres:</label>
+            <input (input)="onAddressInput($event)" id="delivery" type="text" placeholder="Wpisz adres">
+            @if(mapShow){
+            <div class="map-container">
+                <div class="map-frame">
+                    <div id="map"></div>
                 </div>
-                <button (click)="addDelivery()" class="summary-delivery--addBtn">Dodaj</button>
-                }
-                @if(!mapShow){
-                <button (click)="searchLocalisation()">Wyszukaj</button>
-                }
+            </div>
+            <button (click)="addDelivery()" class="summary-delivery--addBtn">Dodaj</button>
+            }
+            @if(!mapShow){
+            <button (click)="searchLocalisation()">Wyszukaj</button>
+            }
             }
 
         </div>
@@ -62,24 +62,30 @@
                 {{orderItem.name}}
                 <p>{{orderItem.price}} zł</p>
                 <div>
-                    @if(true){
+                    <button (click)="removeOrderItem($index)"
+                        class="products-list-button products-list-button-remove">Usuń</button>
+                    @if(orderItem.inEdit){
+                    <form (submit)="editOrderItem($event, $index); orderItem.inEdit=false;">
                         <div class="form-box">
                             <label for="editItem-name">Produkt :</label>
-                            <input type="text" id="editItem-name" placeholder="Zmień produkt">
-                            <p class="error-text">error</p>
+                            <input type="text" id="editItem-name" placeholder="Zmień produkt"
+                                value="{{orderItem.name}}">
                         </div>
                         <div class="form-box">
                             <label for="editItem-price">Cena:</label>
-                            <input type="text" id="editItem-price" placeholder="Podaj nową cene">
-                            <p class="error-text">error</p>
+                            <input type="text" id="editItem-price" placeholder="Podaj nową cene"
+                                value="{{orderItem.price}}">
                         </div>
+                        <button type="submit"
+                            class="products-list-button products-list-button-remove">Zatwierdź</button>
+                    </form>
+
 
                     }
-                    <button (click)="removeOrderItem($index)"
-                        class="products-list-button products-list-button-remove">Usuń</button>
-                    <button (click)="editOrderItem($index)"
+                    @else{
+                    <button (click)="orderItem.inEdit = true;"
                         class="products-list-button products-list-button-remove">Edytuj</button>
-
+                    }
                 </div>
             </li>
             }
@@ -89,14 +95,8 @@
         <div>
             <button (click)="clearOrder()" class="products-list-button products-list-button-clear">Wyczyść</button>
             @if(orderList.length){
-                <button (click)="clearOrder()" class="products-list-button products-list-button-save">Gotowe</button>
+            <button (click)="clearOrder()" class="products-list-button products-list-button-save">Gotowe</button>
             }
         </div>
     </div>
 </div>
-
-<!-- <ul>
-    @for (item of items$ | async; track item) {
-      {{item}}
-    }
-  </ul> -->

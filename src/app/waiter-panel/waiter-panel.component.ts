@@ -1,9 +1,4 @@
-import {
-  Component,
-  Output,
-  EventEmitter,
-  Input,
-} from '@angular/core';
+import { Component, Output, EventEmitter, Input } from '@angular/core';
 import { Inject, PLATFORM_ID } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { FirebaseService } from '../firebase.service';
@@ -25,9 +20,11 @@ class MenuPosition {
 class OrderItem {
   name: string;
   price: number;
+  inEdit: boolean;
   constructor(name: string, price: number) {
     this.name = name;
     this.price = price;
+    this.inEdit = false;
   }
 }
 
@@ -113,11 +110,11 @@ export class WaiterPanelComponent {
     this.orderList.push(new OrderItem(a.innerHTML, price));
   }
 
-  onOrderTypeChange(event: Event){
+  onOrderTypeChange(event: Event) {
     this.orderType = (event.target as HTMLInputElement).value;
   }
 
-  onOrderPaymentChange(event: Event){
+  onOrderPaymentChange(event: Event) {
     this.orderPayment = (event.target as HTMLInputElement).value;
   }
 
@@ -137,8 +134,15 @@ export class WaiterPanelComponent {
     this.orderList.splice(index, 1);
   }
 
-  editOrderItem(index: number) {
-    this.orderList[index].name = "Edytowane"
+  editOrderItem(event: Event, index: number) {
+    event.preventDefault();
+    const eventForm = event.target as HTMLFormElement;
+    this.orderList[index].name = (
+      eventForm.elements[0] as HTMLInputElement
+    ).value;
+    this.orderList[index].price = parseFloat(
+      (eventForm.elements[1] as HTMLInputElement).value
+    );
   }
 
   clearOrder() {
@@ -146,11 +150,9 @@ export class WaiterPanelComponent {
   }
 
   addExtraItemToOrder(inputExtra: HTMLInputElement) {
-    console.log(inputExtra.value);
     const price: number = parseFloat(inputExtra.value);
     if (!isNaN(price) && price != 0) {
       this.orderList.push(new OrderItem('Inne', price));
-      inputExtra.value = 'Inne';
     } else {
       alert('Wprowadź wartość');
     }
@@ -196,6 +198,5 @@ export class WaiterPanelComponent {
     console.log(menu);
 
     this.menuList = menu;
-
   }
 }
