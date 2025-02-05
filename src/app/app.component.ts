@@ -37,8 +37,6 @@ export class AppComponent {
       } else {
         alert('Błąd związany z zamianą adresu na współrzędne');
       }
-
-      // this.pages = response.lat;
     });
   }
 }

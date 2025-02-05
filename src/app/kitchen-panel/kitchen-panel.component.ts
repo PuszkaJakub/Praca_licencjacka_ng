@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { FirebaseService } from '../firebase.service';
 
 class Order {
   type: string;
@@ -6,19 +7,23 @@ class Order {
   products: string[];
   address: string;
   status: string;
+  payment: string;
 
   constructor(
     type: string,
     dateDeliver: string,
+    dateOrder: string,
     products: string[],
     address: string,
-    status: string
+    status: string,
+    payment: string
   ) {
     this.type = type;
     this.dateDeliver = dateDeliver;
     this.products = products;
     this.address = address;
     this.status = status
+    this.payment = payment;
   }
 
   // <p>{{orderItem.type}}</p>
@@ -34,103 +39,31 @@ class Order {
   styleUrl: './kitchen-panel.component.scss',
 })
 export class KitchenPanelComponent {
-  orderList: Order[] = [
-    new Order(
-      'Pyszne',
-      '17:45',
-      ['#17. Bambini Felici#7.2. Quattro Colori#8. Italian Lover"'],
-      'Gzikowa 14/2', 'kuchnia'
-    ),
-    new Order(
-      'Sala',
-      '18:15',
-      ['#11. Capriciosa#21. Frutti di Mare (bez mozzarelli)'],
-      'sala', 'kuchnia'
-    ),
-    // new Order(
-    //   'Sala',
-    //   '18:15',
-    //   ['#11. Capriciosa#21. Frutti di Mare (bez mozzarelli)'],
-    //   'sala'
-    // ),
-    // new Order(
-    //   'Sala',
-    //   '18:15',
-    //   ['#11. Capriciosa#21. Frutti di Mare (bez mozzarelli)'],
-    //   'sala'
-    // ),
-    // new Order(
-    //   'Pyszne',
-    //   '17:45',
-    //   ['#17. Bambini Felici#7.2. Quattro Colori#8. Italian Lover"'],
-    //   'Gzikowa 14/2'
-    // ),
-    // new Order(
-    //   'Sala',
-    //   '18:15',
-    //   ['#11. Capriciosa#21. Frutti di Mare (bez mozzarelli)'],
-    //   'sala'
-    // ),
-    // new Order(
-    //   'Sala',
-    //   '18:15',
-    //   ['#11. Capriciosa#21. Frutti di Mare (bez mozzarelli)'],
-    //   'sala'
-    // ),
-    // new Order(
-    //   'Sala',
-    //   '18:15',
-    //   ['#11. Capriciosa#21. Frutti di Mare (bez mozzarelli)'],
-    //   'sala'
-    // ),
-    // new Order(
-    //   'Pyszne',
-    //   '17:45',
-    //   ['#17. Bambini Felici#7.2. Quattro Colori#8. Italian Lover"'],
-    //   'Gzikowa 14/2'
-    // ),
-    // new Order(
-    //   'Sala',
-    //   '18:15',
-    //   ['#11. Capriciosa#21. Frutti di Mare (bez mozzarelli)'],
-    //   'sala'
-    // ),
-    // new Order(
-    //   'Sala',
-    //   '18:15',
-    //   ['#11. Capriciosa#21. Frutti di Mare (bez mozzarelli)'],
-    //   'sala'
-    // ),
-    // new Order(
-    //   'Sala',
-    //   '18:15',
-    //   ['#11. Capriciosa#21. Frutti di Mare (bez mozzarelli)'],
-    //   'sala'
-    // ),
-    // new Order(
-    //   'Pyszne',
-    //   '17:45',
-    //   ['#17. Bambini Felici#7.2. Quattro Colori#8. Italian Lover"'],
-    //   'Gzikowa 14/2'
-    // ),
-    // new Order(
-    //   'Sala',
-    //   '18:15',
-    //   ['#11. Capriciosa#21. Frutti di Mare (bez mozzarelli)'],
-    //   'sala'
-    // ),
-    // new Order(
-    //   'Sala',
-    //   '18:15',
-    //   ['#11. Capriciosa#21. Frutti di Mare (bez mozzarelli)'],
-    //   'sala'
-    // ),
-    // new Order(
-    //   'Sala',
-    //   '18:15',
-    //   ['#11. Capriciosa#21. Frutti di Mare (bez mozzarelli)'],
-    //   'sala'
-    // ),
 
-  ];
+  constructor(private firebase: FirebaseService){
+    this.orderList = [];
+    // this.getOrdersFromServer();
+
+  }
+
+  orderList: Order[] = [];
+
+  async getOrdersFromServer() {
+    const data = await this.firebase.fetchDataOrdersKitchen();
+    const orders = data.map((element) => {
+      return new Order(
+        element['type'],
+        element['dateDeliver'],
+        element['dateOrder'],
+        element['products'],
+        element['address'],
+        element['status'],
+        element['payment']
+      );
+    });
+    console.log(orders);
+
+    this.orderList = orders;
+
+  }
 }

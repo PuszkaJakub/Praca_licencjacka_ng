@@ -18,7 +18,7 @@ h1 {
   grid-template-columns: 1fr 1fr;
   grid-template-rows: repeat(13, 1fr);
   gap: 10px 20px;
-  grid-auto-flow: column;
+  grid-auto-flow: row;
   padding: 0.5em;
 
   &-item {
@@ -74,6 +74,11 @@ h1 {
   & label {
     text-align: center;
   }
+  & select{
+    width: 18em;
+    padding: 1rem;
+    margin-bottom: 2rem;
+  }
 
   &-delivery {
     &--addBtn {
@@ -82,7 +87,7 @@ h1 {
   }
 
   & input {
-    width: 12rem;
+    width: 18em;
     padding: 1em 0.5em;
   }
 

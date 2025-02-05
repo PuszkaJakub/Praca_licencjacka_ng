@@ -1,12 +1,14 @@
-import { Component, Output, EventEmitter, Input, inject } from '@angular/core';
+import {
+  Component,
+  Output,
+  EventEmitter,
+  Input,
+} from '@angular/core';
 import { Inject, PLATFORM_ID } from '@angular/core';
-import { Observable } from 'rxjs';
 import { AsyncPipe } from '@angular/common';
-import { environment } from '../../environments/environment';
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
+import { FirebaseService } from '../firebase.service';
 
-class Pizza {
+class MenuPosition {
   name: string;
   number: number;
   category: string;
@@ -57,27 +59,26 @@ export class WaiterPanelComponent {
 
   numberOfProducts: number;
   orderTotal: number;
-  menuList: Pizza[];
+  menuList: MenuPosition[];
+  orderType: string;
+  orderPayment: string;
   orderList: OrderItem[];
   addressToSearch: string;
   mapShow: boolean;
 
-  app = initializeApp(environment.firebaseConfig);
-  db = getFirestore(this.app);
-
   constructor(
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private firebase: FirebaseService
   ) {
     this.numberOfProducts = 0;
     this.orderTotal = 0;
-    const pizzaList = this.fetchData();
+    // const pizzaList = this.getMenuFromServer();
     this.menuList = [];
+    this.orderType = '';
+    this.orderPayment = '';
     this.orderList = [];
     this.addressToSearch = '';
     this.mapShow = false;
-
-    
-
   }
   private map: any;
 
@@ -112,6 +113,14 @@ export class WaiterPanelComponent {
     this.orderList.push(new OrderItem(a.innerHTML, price));
   }
 
+  onOrderTypeChange(event: Event){
+    this.orderType = (event.target as HTMLInputElement).value;
+  }
+
+  onOrderPaymentChange(event: Event){
+    this.orderPayment = (event.target as HTMLInputElement).value;
+  }
+
   getNumberOfProducts() {
     return this.orderList.length;
   }
@@ -128,17 +137,13 @@ export class WaiterPanelComponent {
     this.orderList.splice(index, 1);
   }
 
-  editOrderItem(index: number) {}
-
-  items: any[] = [];
-  async clearOrder() {
-    const ala = collection(this.db, 'Menu' )
-    const snap = await getDocs(ala);
-    const list = snap.docs.map(doc => doc.data())
-    console.log(list)
+  editOrderItem(index: number) {
+    this.orderList[index].name = "Edytowane"
   }
 
-
+  clearOrder() {
+    this.orderList = [];
+  }
 
   addExtraItemToOrder(inputExtra: HTMLInputElement) {
     console.log(inputExtra.value);
@@ -178,12 +183,19 @@ export class WaiterPanelComponent {
     this.mapShow = false;
   }
 
-  async fetchData(){
-    const data = await getDocs(collection(this.db, 'Menu' ));
-    const dataList = data.docs.map(doc => {
-      const record = doc.data();
-      return new Pizza(record['name'], record['number'], record['category'], record['price'])
-    })
-    this.menuList = dataList;
+  async getMenuFromServer() {
+    const data = await this.firebase.fetchDataMenu();
+    const menu = data.map((element) => {
+      return new MenuPosition(
+        element['name'],
+        element['number'],
+        element['category'],
+        element['price']
+      );
+    });
+    console.log(menu);
+
+    this.menuList = menu;
+
   }
 }
