@@ -2,31 +2,8 @@ import { Component, Output, EventEmitter, Input } from '@angular/core';
 import { Inject, PLATFORM_ID } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { FirebaseService } from '../firebase.service';
+import { MenuPosition, OrderItem } from '../model/class-templates'
 
-class MenuPosition {
-  name: string;
-  number: number;
-  category: string;
-  price: number;
-
-  constructor(name: string, number: number, category: string, price: number) {
-    this.name = name;
-    this.number = number;
-    this.category = category;
-    this.price = price;
-  }
-}
-
-class OrderItem {
-  name: string;
-  price: number;
-  inEdit: boolean;
-  constructor(name: string, price: number) {
-    this.name = name;
-    this.price = price;
-    this.inEdit = false;
-  }
-}
 
 @Component({
   selector: 'app-waiter-panel',
@@ -60,6 +37,7 @@ export class WaiterPanelComponent {
   orderType: string;
   orderPayment: string;
   orderList: OrderItem[];
+  orderAddress: string;
   addressToSearch: string;
   mapShow: boolean;
 
@@ -71,9 +49,10 @@ export class WaiterPanelComponent {
     this.orderTotal = 0;
     // const pizzaList = this.getMenuFromServer();
     this.menuList = [];
-    this.orderType = '';
+    this.orderType = 'Sala';
     this.orderPayment = '';
     this.orderList = [];
+    this.orderAddress = 'Sala';
     this.addressToSearch = '';
     this.mapShow = false;
   }
@@ -118,9 +97,6 @@ export class WaiterPanelComponent {
     this.orderPayment = (event.target as HTMLInputElement).value;
   }
 
-  getNumberOfProducts() {
-    return this.orderList.length;
-  }
 
   getOrderTotal() {
     let price = 0;
@@ -149,6 +125,25 @@ export class WaiterPanelComponent {
     this.orderList = [];
   }
 
+  sendOrder(){
+
+    // type: string,
+    // dateDeliver: string,
+    // dateOrder: string,
+    // products: string[],
+    // address: string,
+    // status: string,
+    // payment: string
+
+    console.log(this.orderType)
+    console.log()
+    console.log()
+    console.log(this.orderList)
+    console.log(this.orderAddress)
+    console.log("kuchnia")
+    console.log(this.orderPayment)
+  }
+
   addExtraItemToOrder(inputExtra: HTMLInputElement) {
     const price: number = parseFloat(inputExtra.value);
     if (!isNaN(price) && price != 0) {
@@ -160,7 +155,6 @@ export class WaiterPanelComponent {
 
   searchLocalisation() {
     if (this.addressToSearch !== null && this.addressToSearch !== '') {
-      console.log(this.addressToSearch);
       this.searchAddress.emit(this.addressToSearch);
     } else {
       alert('Pole nie może być puste');
@@ -173,7 +167,6 @@ export class WaiterPanelComponent {
   }
 
   addDelivery() {
-    console.log(this.routeInfo[0] / 1000);
     const deliveryPrice = (this.routeInfo[0] / 1000) * 3;
     this.orderList.push(
       new OrderItem(
@@ -181,6 +174,7 @@ export class WaiterPanelComponent {
         Math.round(this.routeInfo[0] / 1000) * 3
       )
     );
+    this.orderAddress = this.addressToSearch;
     this.addressToSearch = '';
     this.mapShow = false;
   }

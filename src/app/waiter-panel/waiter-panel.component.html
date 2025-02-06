@@ -8,23 +8,29 @@
         }
     </div>
 
-    <div class="summary">
-        <div class="summary-extra">
+    <div class="orderInfo">
+        <div class="orderInfo-element">
             <label for="extra">Inne (zł):</label>
             <input #inputExtra id="extra" type="number" placeholder="Inne">
             <button (click)="addExtraItemToOrder(inputExtra)" class="extra-btn">Dodaj</button>
+
         </div>
-
-
-
-
-        <div class="summary-delivery">
+        <hr style="width:50%;">
+        <div class="orderInfo-element">
             <label for="orderPayment">Sposób płatności</label>
             <select id="orderPayment" (change)="onOrderPaymentChange($event)">
                 <option value="Karta">-- Wybierz sposób płatności --</option>
                 <option value="Karta">Karta</option>
                 <option value="Gotowka">Gotówka</option>
             </select>
+
+        </div>
+        <div class="orderInfo-element">
+            <label for="orderTime">Czas</label>
+            <input #inputExtra id="orderTime" type="time" placeholder="Inne">
+
+        </div>
+        <div class="orderInfo-element">
 
             <label for="orderType">Typ zamówienia</label>
             <select id="orderType" (change)="onOrderTypeChange($event)">
@@ -33,8 +39,9 @@
                 <option value="Odbior">Odbiór</option>
                 <option value="Dostawa">Dostawa</option>
             </select>
+        </div>
 
-
+        <div class="orderInfo-element">
             @if(orderType == 'Dostawa'){
             <label for="delivery">🚚 Dostawa (km x 3zł) - wyszukaj adres:</label>
             <input (input)="onAddressInput($event)" id="delivery" type="text" placeholder="Wpisz adres">
@@ -50,20 +57,15 @@
             <button (click)="searchLocalisation()">Wyszukaj</button>
             }
             }
-
         </div>
     </div>
 
     <div class="products-list">
-        <p [attr.value]="numberOfProducts" class="products-list-counter">Liczba elementów: {{getNumberOfProducts()}}</p>
+        <p [attr.value]="numberOfProducts" class="products-list-counter">Liczba elementów: {{orderList.length}}</p>
         <ul>
             @for(orderItem of orderList; track $index){
             <li>
-                {{orderItem.name}}
-                <p>{{orderItem.price}} zł</p>
                 <div>
-                    <button (click)="removeOrderItem($index)"
-                        class="products-list-button products-list-button-remove">Usuń</button>
                     @if(orderItem.inEdit){
                     <form (submit)="editOrderItem($event, $index); orderItem.inEdit=false;">
                         <div class="form-box">
@@ -83,6 +85,10 @@
 
                     }
                     @else{
+                    <p>{{orderItem.name}}</p>
+                    <p>{{orderItem.price}} zł</p>
+                    <button (click)="removeOrderItem($index)"
+                        class="products-list-button products-list-button-remove">Usuń</button>
                     <button (click)="orderItem.inEdit = true;"
                         class="products-list-button products-list-button-remove">Edytuj</button>
                     }
@@ -95,7 +101,7 @@
         <div>
             <button (click)="clearOrder()" class="products-list-button products-list-button-clear">Wyczyść</button>
             @if(orderList.length){
-            <button (click)="clearOrder()" class="products-list-button products-list-button-save">Gotowe</button>
+            <button (click)="sendOrder();clearOrder()" class="products-list-button products-list-button-save">Gotowe</button>
             }
         </div>
     </div>
