@@ -46,7 +46,7 @@ export class WaiterPanelComponent {
   ) {
     this.numberOfProducts = 0;
     this.orderTotal = 0;
-    // const pizzaList = this.getMenuFromServer();
+    const pizzaList = this.getMenuFromServer();
     this.menuList = [];
     this.orderType = 'Sala';
     this.orderPayment = '';
