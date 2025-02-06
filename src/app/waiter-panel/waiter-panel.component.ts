@@ -1,6 +1,5 @@
 import { Component, Output, EventEmitter, Input } from '@angular/core';
 import { Inject, PLATFORM_ID } from '@angular/core';
-import { AsyncPipe } from '@angular/common';
 import { FirebaseService } from '../firebase.service';
 import { MenuPosition, OrderItem } from '../model/class-templates'
 
@@ -8,7 +7,7 @@ import { MenuPosition, OrderItem } from '../model/class-templates'
 @Component({
   selector: 'app-waiter-panel',
   standalone: true,
-  imports: [AsyncPipe],
+  imports: [],
   templateUrl: './waiter-panel.component.html',
   styleUrl: './waiter-panel.component.scss',
 })
