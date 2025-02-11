@@ -1,8 +1,8 @@
 import { Component, Output, EventEmitter, Input } from '@angular/core';
 import { Inject, PLATFORM_ID } from '@angular/core';
 import { FirebaseService } from '../firebase.service';
-import { MenuPosition, OrderItem } from '../model/class-templates'
-
+import { MenuPosition, Order, OrderItem } from '../model/class-templates';
+import { Timestamp } from 'firebase/firestore';
 
 @Component({
   selector: 'app-waiter-panel',
@@ -33,6 +33,7 @@ export class WaiterPanelComponent {
   numberOfProducts: number;
   orderTotal: number;
   menuList: MenuPosition[];
+  orderTime: Date;
   orderType: string;
   orderPayment: string;
   orderList: OrderItem[];
@@ -48,6 +49,7 @@ export class WaiterPanelComponent {
     this.orderTotal = 0;
     const pizzaList = this.getMenuFromServer();
     this.menuList = [];
+    this.orderTime = new Date();
     this.orderType = 'Sala';
     this.orderPayment = '';
     this.orderList = [];
@@ -85,17 +87,26 @@ export class WaiterPanelComponent {
     const a = event.target as HTMLElement;
     const dataPrice = a.getAttribute('data-price');
     const price = dataPrice ? parseInt(dataPrice) : 0;
-    this.orderList.push(new OrderItem(a.innerHTML, price));
+    this.orderList.push({
+      name: a.innerHTML,
+      price: price,
+      inEdit: false,
+    });
   }
 
   onOrderTypeChange(event: Event) {
     this.orderType = (event.target as HTMLInputElement).value;
+    if(this.orderType === 'Sala'){
+      this.orderAddress = 'Sala'
+    }
+    else if(this.orderType === 'Odbior'){
+      this.orderAddress = 'Odbior'
+    }
   }
 
   onOrderPaymentChange(event: Event) {
     this.orderPayment = (event.target as HTMLInputElement).value;
   }
-
 
   getOrderTotal() {
     let price = 0;
@@ -124,29 +135,27 @@ export class WaiterPanelComponent {
     this.orderList = [];
   }
 
-  sendOrder(){
-
-    // type: string,
-    // dateDeliver: string,
-    // dateOrder: string,
-    // products: string[],
-    // address: string,
-    // status: string,
-    // payment: string
-
-    console.log(this.orderType)
-    console.log()
-    console.log()
-    console.log(this.orderList)
-    console.log(this.orderAddress)
-    console.log("kuchnia")
-    console.log(this.orderPayment)
+  sendOrder() {
+    let newOrderProducts: string = '';
+    this.orderList.forEach((product) => {
+      newOrderProducts += product.name.trim();
+      newOrderProducts += '\n';
+    });
+    const newOrder = {
+      type: this.orderType,
+      dateDeliver: this.orderTime,
+      products: newOrderProducts,
+      address: this.orderAddress,
+      status: 'Kuchnia',
+      payment: this.orderPayment,
+    };
+    this.firebase.addDataOrder(newOrder);
   }
 
   addExtraItemToOrder(inputExtra: HTMLInputElement) {
     const price: number = parseFloat(inputExtra.value);
     if (!isNaN(price) && price != 0) {
-      this.orderList.push(new OrderItem('Inne', price));
+      this.orderList.push({ name: 'Inne', price: price, inEdit: false });
     } else {
       alert('Wprowadź wartość');
     }
@@ -165,14 +174,24 @@ export class WaiterPanelComponent {
     this.addressToSearch = value;
   }
 
+  onTimeInput(event: Event) {
+    const inputElement = event.target as HTMLInputElement;
+    const timeValue = inputElement.value;
+
+    const [hours, minutes] = timeValue.split(':').map(Number);
+    this.orderTime.setHours(hours);
+    this.orderTime.setMinutes(minutes);
+    this.orderTime.setSeconds(0);
+    this.orderTime.setMilliseconds(0);
+  }
+
   addDelivery() {
     const deliveryPrice = (this.routeInfo[0] / 1000) * 3;
-    this.orderList.push(
-      new OrderItem(
-        `Dostawa - ${this.addressToSearch}`,
-        Math.round(this.routeInfo[0] / 1000) * 3
-      )
-    );
+    this.orderList.push({
+      name: `Dostawa - ${this.addressToSearch}`,
+      price: Math.round(this.routeInfo[0] / 1000) * 3,
+      inEdit: false,
+    });
     this.orderAddress = this.addressToSearch;
     this.addressToSearch = '';
     this.mapShow = false;
@@ -181,12 +200,12 @@ export class WaiterPanelComponent {
   async getMenuFromServer() {
     const data = await this.firebase.fetchDataMenu();
     const menu = data.map((element) => {
-      return new MenuPosition(
-        element['name'],
-        element['number'],
-        element['category'],
-        element['price']
-      );
+      return {
+        name: element['name'],
+        number: element['number'],
+        category: element['category'],
+        price: element['price'],
+      };
     });
     console.log(menu);
 

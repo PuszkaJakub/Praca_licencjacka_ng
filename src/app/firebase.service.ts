@@ -6,9 +6,11 @@ import {
   getDocs,
   query,
   orderBy,
+  addDoc
 } from 'firebase/firestore/lite';
 import { environment } from '../environments/environment';
-import { doc, onSnapshot, where } from 'firebase/firestore';
+import {where} from 'firebase/firestore';
+import { Order } from './model/class-templates';
 
 @Injectable({
   providedIn: 'root',
@@ -42,5 +44,9 @@ export class FirebaseService {
       return doc.data()
     })
     return data1;
+  }
+
+  async addDataOrder(order: Order){
+    await addDoc(collection(this.database, 'Orders'), order)
   }
 }

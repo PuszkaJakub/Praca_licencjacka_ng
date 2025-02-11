@@ -27,7 +27,7 @@
         </div>
         <div class="orderInfo-element">
             <label for="orderTime">Czas</label>
-            <input #inputExtra id="orderTime" type="time" placeholder="Inne">
+            <input #inputExtra (input)="onTimeInput($event)" id="orderTime" type="time" placeholder="Inne">
 
         </div>
         <div class="orderInfo-element">

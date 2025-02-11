@@ -19,15 +19,14 @@ export class KitchenPanelComponent {
   async getOrdersFromServer() {
     const data = await this.firebase.fetchDataOrdersKitchen();
     const orders = data.map((element) => {
-      return new Order(
-        element['type'],
-        element['dateDeliver'],
-        element['dateOrder'],
-        element['products'],
-        element['address'],
-        element['status'],
-        element['payment']
-      );
+      return {
+        type: element['type'],
+        dateDeliver: element['dateDeliver'],
+        products: element['products'],
+        address: element['address'],
+        status: element['status'],
+        payment: element['payment'],
+      };
     });
     console.log(orders);
 
