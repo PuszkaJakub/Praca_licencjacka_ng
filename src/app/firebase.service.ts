@@ -8,7 +8,7 @@ import {
   orderBy,
   addDoc
 } from 'firebase/firestore/lite';
-import { environment } from '../environments/environment';
+// import { environment } from '../environments/environment';
 import {where} from 'firebase/firestore';
 import { Order } from './model/class-templates';
 
@@ -16,7 +16,17 @@ import { Order } from './model/class-templates';
   providedIn: 'root',
 })
 export class FirebaseService {
-  app = initializeApp(environment.firebaseConfig);
+  
+  netlifyFirebaseConfig = {
+    apiKey: process.env.apiKey,
+    authDomain: process.env.authDomain,
+    projectId: process.env.projectId,
+    storageBucket: process.env.storageBucket,
+    messagingSenderId: process.env.messagingSenderId,
+    appId: process.env.appId
+  }
+  // app = initializeApp(environment.firebaseConfig);
+  app = initializeApp(this.netlifyFirebaseConfig);
   database = getFirestore(this.app);
 
   constructor() {}
