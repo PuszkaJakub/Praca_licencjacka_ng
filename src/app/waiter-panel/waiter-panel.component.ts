@@ -207,8 +207,6 @@ export class WaiterPanelComponent {
         price: element['price'],
       };
     });
-    console.log(menu);
-
     this.menuList = menu;
   }
 }

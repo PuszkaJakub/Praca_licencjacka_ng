@@ -9,27 +9,16 @@ import { Order } from '../model/class-templates';
   styleUrl: './kitchen-panel.component.scss',
 })
 export class KitchenPanelComponent {
-  constructor(private firebase: FirebaseService) {
-    this.orderList = [];
-    // this.getOrdersFromServer();
-  }
-
   orderList: Order[] = [];
 
-  async getOrdersFromServer() {
-    const data = await this.firebase.fetchDataOrdersKitchen();
-    const orders = data.map((element) => {
-      return {
-        type: element['type'],
-        dateDeliver: element['dateDeliver'],
-        products: element['products'],
-        address: element['address'],
-        status: element['status'],
-        payment: element['payment'],
-      };
-    });
-    console.log(orders);
+  constructor(private firebase: FirebaseService) {
+    this.getOrdersFromServer();
+  }
 
+
+  async getOrdersFromServer() {
+    const orders = await this.firebase.fetchDataOrdersKitchen();
+    
     this.orderList = orders;
   }
 }
