@@ -3,6 +3,7 @@ import { Inject, PLATFORM_ID } from '@angular/core';
 import { FirebaseService } from '../firebase.service';
 import { MenuPosition, Order, OrderItem } from '../model/class-templates';
 import { Timestamp } from 'firebase/firestore';
+import * as L from 'leaflet'
 
 @Component({
   selector: 'app-waiter-panel',
@@ -24,9 +25,8 @@ export class WaiterPanelComponent {
 
     if (value.length) {
       this.mapShow = true;
-      import('leaflet').then((L) => {
-        this.initMap(L);
-      });
+      this.initMap();
+
     }
   }
 
@@ -57,11 +57,11 @@ export class WaiterPanelComponent {
     this.addressToSearch = '';
     this.mapShow = false;
   }
-  private map: any;
+  // private map: any;
 
   // Leaflet map
-  private initMap(L: typeof import('leaflet')): void {
-    this.map = L.map('map', {
+  private initMap(): void {
+    const map = L.map('map', {
       center: [this.routeInfo[2], this.routeInfo[3]],
       zoom: 20,
     });
@@ -69,10 +69,10 @@ export class WaiterPanelComponent {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    }).addTo(this.map);
+    }).addTo(map);
 
     const marker = L.marker([this.routeInfo[2], this.routeInfo[3]]).addTo(
-      this.map
+      map
     );
     marker
       .bindPopup(
