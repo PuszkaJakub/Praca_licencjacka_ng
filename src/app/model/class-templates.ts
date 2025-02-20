@@ -12,6 +12,7 @@ export interface OrderItem {
 }
 
 export interface Order {
+    id: string;
     type: string;
     dateDeliver: Date;
     products: string;

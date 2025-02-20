@@ -2,8 +2,7 @@ import { Component, Output, EventEmitter, Input } from '@angular/core';
 import { Inject, PLATFORM_ID } from '@angular/core';
 import { FirebaseService } from '../firebase.service';
 import { MenuPosition, Order, OrderItem } from '../model/class-templates';
-import { Timestamp } from 'firebase/firestore';
-import * as L from 'leaflet'
+import { map, latLng, tileLayer, MapOptions } from 'leaflet';
 
 @Component({
   selector: 'app-waiter-panel',
@@ -25,8 +24,9 @@ export class WaiterPanelComponent {
 
     if (value.length) {
       this.mapShow = true;
-      this.initMap();
-
+      import('leaflet').then((L) => {
+        this.initMap(L);
+      });
     }
   }
 
@@ -40,6 +40,7 @@ export class WaiterPanelComponent {
   orderAddress: string;
   addressToSearch: string;
   mapShow: boolean;
+  map: any;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -57,22 +58,22 @@ export class WaiterPanelComponent {
     this.addressToSearch = '';
     this.mapShow = false;
   }
-  // private map: any;
 
   // Leaflet map
-  private initMap(): void {
-    const map = L.map('map', {
-      center: [this.routeInfo[2], this.routeInfo[3]],
-      zoom: 20,
-    });
+  private initMap(L: typeof import('leaflet')): void {
+    const options: MapOptions = {
+      center: latLng([this.routeInfo[2], this.routeInfo[3]]),
+      zoom: 18,
+    };
+    const mymap = map('leafletmap', options)
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    }).addTo(map);
+    }).addTo(mymap);
 
     const marker = L.marker([this.routeInfo[2], this.routeInfo[3]]).addTo(
-      map
+      mymap
     );
     marker
       .bindPopup(
@@ -96,11 +97,10 @@ export class WaiterPanelComponent {
 
   onOrderTypeChange(event: Event) {
     this.orderType = (event.target as HTMLInputElement).value;
-    if(this.orderType === 'Sala'){
-      this.orderAddress = 'Sala'
-    }
-    else if(this.orderType === 'Odbior'){
-      this.orderAddress = 'Odbior'
+    if (this.orderType === 'Sala') {
+      this.orderAddress = 'Sala';
+    } else if (this.orderType === 'Odbior') {
+      this.orderAddress = 'Odbior';
     }
   }
 
@@ -142,6 +142,7 @@ export class WaiterPanelComponent {
       newOrderProducts += '\n';
     });
     const newOrder = {
+      id: '',
       type: this.orderType,
       dateDeliver: this.orderTime,
       products: newOrderProducts,

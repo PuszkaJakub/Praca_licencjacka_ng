@@ -42,22 +42,21 @@
             </select>
         </div>
 
-        <div class="orderInfo-element">
-            @if(orderType == 'Dostawa'){
+        <div [hidden]="orderType === 'dostawa'" class="orderInfo-element">
+
             <label for="delivery">🚚 Dostawa (km x 3zł) - wyszukaj adres:</label>
             <input (input)="onAddressInput($event)" id="delivery" type="text" placeholder="Wpisz adres">
-            @if(mapShow){
-            <div class="map-container">
+
+            <div [hidden]="!mapShow" class="map-container">
                 <div class="map-frame">
-                    <div id="map"></div>
+                    <div id="leafletmap"></div>
                 </div>
+                <button (click)="addDelivery()" class="summary-delivery--addBtn">Dodaj</button>
             </div>
-            <button (click)="addDelivery()" class="summary-delivery--addBtn">Dodaj</button>
-            }
-            @if(!mapShow){
-            <button (click)="searchLocalisation()">Wyszukaj</button>
-            }
-            }
+            
+         
+            <button [hidden]="mapShow"(click)="searchLocalisation()">Wyszukaj</button>
+      
         </div>
     </div>
 

@@ -10,6 +10,9 @@ import {
   getDocs,
   orderBy,
   addDoc,
+  doc,
+  updateDoc,
+  setDoc
 } from 'firebase/firestore';
 import { Order } from './model/class-templates';
 
@@ -41,7 +44,9 @@ export class FirebaseService {
     const ala = onSnapshot(q, (querySnapshot) => {
       querySnapshot.docChanges().forEach((change) => {
         if (change.type === "added") {
+          console.log(change.doc.id)
           const order = {
+            id: change.doc.id,
             type: change.doc.data()['type'],
             dateDeliver: change.doc.data()['dateDeliver'],
             products: change.doc.data()['products'],
@@ -60,6 +65,21 @@ export class FirebaseService {
   }
 
   async addDataOrder(order: Order) {
-    await addDoc(collection(this.database, 'Orders'), order);
+    await addDoc(collection(this.database, 'Orders'), 
+    {
+      type: order.type,
+      deteDeliver: order.dateDeliver,
+      products: order.products,
+      address: order.address,
+      status: order.status,
+      payment: order.payment
+    }
+    );
+  }
+
+  async setOrderDone(orderID: string){
+    await updateDoc(doc(this.database, 'Orders', orderID), {
+      status: 'Gotowe'
+    })
   }
 }

@@ -25,7 +25,6 @@ export class AppComponent {
         this.graphhopper
           .search(`${nominatimResponse[0].lat},${nominatimResponse[0].lon}`)
           .subscribe((graphhopperResponse: any) => {
-            console.log('infoooo kurr' + graphhopperResponse)
             const value: number[] = []
             value[0] = parseFloat(graphhopperResponse.paths[0].distance);
             value[1] = parseFloat(graphhopperResponse.paths[0].time);

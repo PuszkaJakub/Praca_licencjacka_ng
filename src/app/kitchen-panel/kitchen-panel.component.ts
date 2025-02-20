@@ -21,4 +21,9 @@ export class KitchenPanelComponent {
     
     this.orderList = orders;
   }
+
+  async setOrderReady(orderID: string){
+    await this.firebase.setOrderDone(orderID);
+    this.getOrdersFromServer();
+  }
 }
