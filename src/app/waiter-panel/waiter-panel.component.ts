@@ -2,7 +2,7 @@ import { Component, Output, EventEmitter, Input } from '@angular/core';
 import { Inject, PLATFORM_ID } from '@angular/core';
 import { FirebaseService } from '../firebase.service';
 import { MenuPosition, Order, OrderItem } from '../model/class-templates';
-import { map, latLng, tileLayer, MapOptions } from 'leaflet';
+import * as L from 'leaflet';
 
 @Component({
   selector: 'app-waiter-panel',
@@ -24,9 +24,7 @@ export class WaiterPanelComponent {
 
     if (value.length) {
       this.mapShow = true;
-      import('leaflet').then((L) => {
-        this.initMap(L);
-      });
+      this.initialize();
     }
   }
 
@@ -60,14 +58,14 @@ export class WaiterPanelComponent {
   }
 
   // Leaflet map
-  private initMap(L: typeof import('leaflet')): void {
-    const options: MapOptions = {
-      center: latLng([this.routeInfo[2], this.routeInfo[3]]),
+  private initialize(): void {
+    const options: L.MapOptions = {
+      center: L.latLng([this.routeInfo[2], this.routeInfo[3]]),
       zoom: 18,
     };
-    const mymap = map('leafletmap', options)
+    const mymap = L.map('leafletmap', options);
 
-    tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(mymap);
