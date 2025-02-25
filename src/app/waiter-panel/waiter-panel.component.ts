@@ -2,12 +2,22 @@ import { Component, Output, EventEmitter, Input } from '@angular/core';
 import { Inject, PLATFORM_ID } from '@angular/core';
 import { FirebaseService } from '../firebase.service';
 import { MenuPosition, Order, OrderItem } from '../model/class-templates';
+import {
+  ReactiveFormsModule,
+  FormGroup,
+  FormControl,
+  Validators,
+} from '@angular/forms';
 import * as L from 'leaflet';
+
+//TODO - usunac pipe
+import { JsonPipe } from '@angular/common';
 
 @Component({
   selector: 'app-waiter-panel',
   standalone: true,
-  imports: [],
+  //TODO - usunac pipe
+  imports: [ReactiveFormsModule, JsonPipe],
   templateUrl: './waiter-panel.component.html',
   styleUrl: './waiter-panel.component.scss',
 })
@@ -24,19 +34,15 @@ export class WaiterPanelComponent {
 
     if (value.length) {
       this.mapShow = true;
-      this.initialize();
+      setTimeout(() => {
+        this.initialize();
+      }, 100);
     }
   }
 
-  numberOfProducts: number;
   orderTotal: number;
   menuList: MenuPosition[];
-  orderTime: Date;
-  orderType: string;
-  orderPayment: string;
   orderList: OrderItem[];
-  orderAddress: string;
-  addressToSearch: string;
   mapShow: boolean;
   map: any;
 
@@ -44,26 +50,38 @@ export class WaiterPanelComponent {
     @Inject(PLATFORM_ID) private platformId: Object,
     private firebase: FirebaseService
   ) {
-    this.numberOfProducts = 0;
     this.orderTotal = 0;
     const pizzaList = this.getMenuFromServer();
     this.menuList = [];
-    this.orderTime = new Date();
-    this.orderType = 'Sala';
-    this.orderPayment = '';
     this.orderList = [];
-    this.orderAddress = 'Sala';
-    this.addressToSearch = '';
     this.mapShow = false;
   }
 
-  // Leaflet map
-  private initialize(): void {
+  orderForm = new FormGroup({
+    type: new FormControl('Sala', [Validators.required]),
+    time: new FormControl('', [Validators.required]),
+    address: new FormControl('', [Validators.required]),
+    payment: new FormControl('Karta', [Validators.required]),
+  });
+
+  editItemForm = new FormGroup({
+    name: new FormControl('', [Validators.required]),
+    price: new FormControl('', [Validators.required]),
+  })
+
+  extraItemForm = new FormGroup({
+    price: new FormControl('', [Validators.required]),
+  })
+
+  private initialize() {
     const options: L.MapOptions = {
       center: L.latLng([this.routeInfo[2], this.routeInfo[3]]),
       zoom: 18,
     };
-    const mymap = L.map('leafletmap', options);
+    const mymap = L.map('leafletmap').setView(
+      [this.routeInfo[2], this.routeInfo[3]],
+      18
+    );
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution:
@@ -87,23 +105,10 @@ export class WaiterPanelComponent {
     const dataPrice = a.getAttribute('data-price');
     const price = dataPrice ? parseInt(dataPrice) : 0;
     this.orderList.push({
-      name: a.innerHTML,
+      name: a.innerText,
       price: price,
       inEdit: false,
     });
-  }
-
-  onOrderTypeChange(event: Event) {
-    this.orderType = (event.target as HTMLInputElement).value;
-    if (this.orderType === 'Sala') {
-      this.orderAddress = 'Sala';
-    } else if (this.orderType === 'Odbior') {
-      this.orderAddress = 'Odbior';
-    }
-  }
-
-  onOrderPaymentChange(event: Event) {
-    this.orderPayment = (event.target as HTMLInputElement).value;
   }
 
   getOrderTotal() {
@@ -118,15 +123,13 @@ export class WaiterPanelComponent {
     this.orderList.splice(index, 1);
   }
 
-  editOrderItem(event: Event, index: number) {
-    event.preventDefault();
-    const eventForm = event.target as HTMLFormElement;
-    this.orderList[index].name = (
-      eventForm.elements[0] as HTMLInputElement
-    ).value;
-    this.orderList[index].price = parseFloat(
-      (eventForm.elements[1] as HTMLInputElement).value
-    );
+  editOrderItemStart(index: number) {
+    this.editItemForm.setValue({name: String(this.orderList[index].name), price: String(this.orderList[index].price)})
+  }
+
+  editOrderItemSet(index: number) {
+    this.orderList[index].name = String(this.editItemForm.get('name')?.value);
+    this.orderList[index].price = parseInt(String(this.editItemForm.get('price')?.value));
   }
 
   clearOrder() {
@@ -134,25 +137,35 @@ export class WaiterPanelComponent {
   }
 
   sendOrder() {
+    let orderTime = new Date();
+    const timeValue = String(this.orderForm.get('time')?.value);
+    if (timeValue) {
+      const [hours, minutes] = timeValue.split(':').map(Number);
+      orderTime.setHours(hours);
+      orderTime.setMinutes(minutes);
+      orderTime.setSeconds(0);
+      orderTime.setMilliseconds(0);
+    }
+
     let newOrderProducts: string = '';
     this.orderList.forEach((product) => {
       newOrderProducts += product.name.trim();
       newOrderProducts += '\n';
     });
+
     const newOrder = {
       id: '',
-      type: this.orderType,
-      dateDeliver: this.orderTime,
+      type: String(this.orderForm.get('type')?.value),
+      dateDeliver: orderTime,
       products: newOrderProducts,
-      address: this.orderAddress,
+      address: String(this.orderForm.get('address')?.value),
       status: 'Kuchnia',
-      payment: this.orderPayment,
+      payment: String(this.orderForm.get('payment')?.value),
     };
     this.firebase.addDataOrder(newOrder);
   }
-
-  addExtraItemToOrder(inputExtra: HTMLInputElement) {
-    const price: number = parseFloat(inputExtra.value);
+  addExtraItemToOrder() {
+    const price: number = parseInt(String(this.extraItemForm.get('price')?.value));
     if (!isNaN(price) && price != 0) {
       this.orderList.push({ name: 'Inne', price: price, inEdit: false });
     } else {
@@ -161,51 +174,30 @@ export class WaiterPanelComponent {
   }
 
   searchLocalisation() {
-    if (this.addressToSearch !== null && this.addressToSearch !== '') {
-      this.searchAddress.emit(this.addressToSearch);
+    const addressToSearch = String(this.orderForm.get('address')?.value);
+    if (addressToSearch !== null && addressToSearch !== '') {
+      this.searchAddress.emit(addressToSearch);
     } else {
       alert('Pole nie może być puste');
     }
   }
 
-  onAddressInput(event: Event) {
-    const value = (event.target as HTMLInputElement).value;
-    this.addressToSearch = value;
-  }
-
-  onTimeInput(event: Event) {
-    const inputElement = event.target as HTMLInputElement;
-    const timeValue = inputElement.value;
-
-    const [hours, minutes] = timeValue.split(':').map(Number);
-    this.orderTime.setHours(hours);
-    this.orderTime.setMinutes(minutes);
-    this.orderTime.setSeconds(0);
-    this.orderTime.setMilliseconds(0);
-  }
-
   addDelivery() {
     const deliveryPrice = (this.routeInfo[0] / 1000) * 3;
     this.orderList.push({
-      name: `Dostawa - ${this.addressToSearch}`,
+      name: `Dostawa - ${this.orderForm.get('address')?.value}`,
       price: Math.round(this.routeInfo[0] / 1000) * 3,
       inEdit: false,
     });
-    this.orderAddress = this.addressToSearch;
-    this.addressToSearch = '';
     this.mapShow = false;
   }
 
   async getMenuFromServer() {
     const data = await this.firebase.fetchDataMenu();
-    const menu = data.map((element) => {
-      return {
-        name: element['name'],
-        number: element['number'],
-        category: element['category'],
-        price: element['price'],
-      };
-    });
-    this.menuList = menu;
+    this.menuList = data;
+  }
+
+  isDelivery(): Boolean {
+    return String(this.orderForm.get('type')?.value) === 'Dostawa';
   }
 }

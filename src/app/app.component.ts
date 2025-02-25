@@ -21,6 +21,7 @@ export class AppComponent {
   ) {}
   searchAddress(address: string) {
     this.nominatim.search(address).subscribe((nominatimResponse: any) => {
+      console.log(nominatimResponse)
       if (nominatimResponse !== undefined && nominatimResponse !== null) {
         this.graphhopper
           .search(`${nominatimResponse[0].lat},${nominatimResponse[0].lon}`)

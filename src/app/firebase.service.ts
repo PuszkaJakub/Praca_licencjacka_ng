@@ -29,22 +29,26 @@ export class FirebaseService {
     const data = await getDocs(
       query(collection(this.database, 'Menu'), orderBy('number'))
     );
-    return data.docs.map((doc) => {
-      // console.log(doc.data())
-      return doc.data();
+    return data.docs.map((element) => {
+      return {
+        name: element.data()['name'],
+        number: element.data()['number'],
+        category: element.data()['category'],
+        price: element.data()['price'],
+      };
+
     });
   }
 
-  async fetchDataOrdersKitchen(): Promise<Order[]> {
+  async fetchDataOrdersKitchen(status: string): Promise<Order[]> {
     const q = query(
       collection(this.database, 'Orders'),
-      where('status', '==', 'Kuchnia')
+      where('status', '==', status)
     );
     let orderList: Order[] = [];
     const ala = onSnapshot(q, (querySnapshot) => {
       querySnapshot.docChanges().forEach((change) => {
         if (change.type === "added") {
-          console.log(change.doc.id)
           const order = {
             id: change.doc.id,
             type: change.doc.data()['type'],
@@ -77,9 +81,9 @@ export class FirebaseService {
     );
   }
 
-  async setOrderDone(orderID: string){
+  async setOrderStatus(orderID: string, newStatus: string){
     await updateDoc(doc(this.database, 'Orders', orderID), {
-      status: 'Gotowe'
+      status: newStatus
     })
   }
 }

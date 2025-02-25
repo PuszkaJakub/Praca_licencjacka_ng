@@ -7,18 +7,20 @@
         </button>
         }
     </div>
+    <form [formGroup]="extraItemForm" class="orderInfo-element" (submit)="addExtraItemToOrder()">
+        <label for="extra">Inne (zł):</label>
+        <input formControlName="price" type="number" placeholder="Inne">
+        <button class="extra-btn">Dodaj</button>
+    </form>
+    <div>Form Contents: {{ orderForm.value | json }}</div>
+    <div>Form Contents: {{ editItemForm.value | json }}</div>
+    <div>Form Contents: {{ extraItemForm.value | json }}</div>
 
-    <div class="orderInfo">
-        <div class="orderInfo-element">
-            <label for="extra">Inne (zł):</label>
-            <input #inputExtra id="extra" type="number" placeholder="Inne">
-            <button (click)="addExtraItemToOrder(inputExtra)" class="extra-btn">Dodaj</button>
-
-        </div>
+    <form [formGroup]="orderForm" class="orderInfo" (submit)="sendOrder();clearOrder()">
         <hr style="width:50%;">
         <div class="orderInfo-element">
             <label for="orderPayment">Sposób płatności</label>
-            <select id="orderPayment" (change)="onOrderPaymentChange($event)">
+            <select id="orderPayment" formControlName="payment">
                 <option value="Karta">-- Wybierz sposób płatności --</option>
                 <option value="Karta">Karta</option>
                 <option value="Gotowka">Gotówka</option>
@@ -28,13 +30,12 @@
         </div>
         <div class="orderInfo-element">
             <label for="orderTime">Czas</label>
-            <input #inputExtra (input)="onTimeInput($event)" id="orderTime" type="time" placeholder="Inne">
+            <input id="orderTime" type="time" formControlName="time">
 
         </div>
         <div class="orderInfo-element">
-
             <label for="orderType">Typ zamówienia</label>
-            <select id="orderType" (change)="onOrderTypeChange($event)">
+            <select id="orderType" formControlName="type">
                 <option value="Dostawa">-- Wybierz sposób dostawy --</option>
                 <option value="Sala">Sala</option>
                 <option value="Odbior">Odbiór</option>
@@ -42,68 +43,73 @@
             </select>
         </div>
 
-        <div [hidden]="orderType === 'dostawa'" class="orderInfo-element">
-
+        <div class="orderInfo-element">
+            @if(isDelivery()){
             <label for="delivery">🚚 Dostawa (km x 3zł) - wyszukaj adres:</label>
-            <input (input)="onAddressInput($event)" id="delivery" type="text" placeholder="Wpisz adres">
+            <input id="delivery" type="text" placeholder="Wpisz adres" formControlName="address">
 
-            <div [hidden]="!mapShow" class="map-container">
-                <div class="map-frame">
-                    <div id="leafletmap"></div>
-                </div>
-                <button (click)="addDelivery()" class="summary-delivery--addBtn">Dodaj</button>
+            @if(mapShow){
+            <div id="leafletmap"></div>
+
+            <div class="leaflet-buttons">
+                <button type="button" (click)="addDelivery()" class="summary-delivery--addBtn">Dodaj</button>
+                <button type="button" (click)="mapShow = false" class="summary-delivery--addBtn">Anuluj</button>
+
             </div>
-            
-         
-            <button [hidden]="mapShow"(click)="searchLocalisation()">Wyszukaj</button>
-      
-        </div>
-    </div>
-
-    <div class="products-list">
-        <p [attr.value]="numberOfProducts" class="products-list-counter">Liczba elementów: {{orderList.length}}</p>
-        <ul>
-            @for(orderItem of orderList; track $index){
-            <li>
-                <div>
-                    @if(orderItem.inEdit){
-                    <form (submit)="editOrderItem($event, $index); orderItem.inEdit=false;">
-                        <div class="form-box">
-                            <label for="editItem-name">Produkt :</label>
-                            <input type="text" id="editItem-name" placeholder="Zmień produkt"
-                                value="{{orderItem.name}}">
-                        </div>
-                        <div class="form-box">
-                            <label for="editItem-price">Cena:</label>
-                            <input type="text" id="editItem-price" placeholder="Podaj nową cene"
-                                value="{{orderItem.price}}">
-                        </div>
-                        <button type="submit"
-                            class="products-list-button products-list-button-remove">Zatwierdź</button>
-                    </form>
-
-
-                    }
-                    @else{
-                    <p>{{orderItem.name}}</p>
-                    <p>{{orderItem.price}} zł</p>
-                    <button (click)="removeOrderItem($index)"
-                        class="products-list-button products-list-button-remove">Usuń</button>
-                    <button (click)="orderItem.inEdit = true;"
-                        class="products-list-button products-list-button-remove">Edytuj</button>
-                    }
-                </div>
-            </li>
             }
-        </ul>
-        <p>Suma zamówienia: </p>
-        <p class="products-list-result" [attr.value]="orderTotal">{{getOrderTotal()}} zł </p>
-        <div>
-            <button (click)="clearOrder()" class="products-list-button products-list-button-clear">Wyczyść</button>
-            @if(orderList.length){
-            <button (click)="sendOrder();clearOrder()"
-                class="products-list-button products-list-button-save">Gotowe</button>
+            @if(!mapShow){
+            <button type="button" (click)="searchLocalisation()">Wyszukaj</button>
+            }
             }
         </div>
-    </div>
+
+
+        <div class="products-list">
+            <p  class="products-list-counter">Liczba elementów: {{orderList.length}}</p>
+            <ul>
+                @for(orderItem of orderList; track $index){
+                <li>
+                    <div>
+                        @if(orderItem.inEdit){
+                        <form [formGroup]="editItemForm" (submit)="editOrderItemSet($index); orderItem.inEdit=false;">
+                            <div class="form-box">
+                                <label for="editItem-name">Produkt :</label>
+                                <input formControlName="name" type="text" id="editItem-name" placeholder="Zmień produkt"
+                                    value="{{orderItem.name}}">
+                            </div>
+                            <div class="form-box">
+                                <label for="editItem-price">Cena:</label>
+                                <input formControlName="price" type="text" id="editItem-price" placeholder="Podaj nową cene"
+                                    value="{{orderItem.price}}">
+                            </div>
+                            <button type="submit"
+                                class="products-list-button products-list-button-remove">Zatwierdź</button>
+                        </form>
+
+
+                        }
+                        @else{
+                        <p>{{orderItem.name}}</p>
+                        <p>{{orderItem.price}} zł</p>
+                        <button type="button" (click)="removeOrderItem($index)"
+                            class="products-list-button products-list-button-remove">Usuń</button>
+                        <button type="button" (click)="orderItem.inEdit = true; editOrderItemStart($index)"
+                            class="products-list-button products-list-button-remove">Edytuj</button>
+                        }
+                    </div>
+                </li>
+                }
+            </ul>
+            <p>Suma zamówienia: </p>
+            <p class="products-list-result" [attr.value]="orderTotal">{{getOrderTotal()}} zł </p>
+            <div>
+                <button type="button" (click)="clearOrder()"
+                    class="products-list-button products-list-button-clear">Wyczyść</button>
+                @if(orderList.length){
+                <button type="submit" class="products-list-button products-list-button-save">Gotowe</button>
+                }
+            </div>
+        </div>
+    </form>
+
 </div>

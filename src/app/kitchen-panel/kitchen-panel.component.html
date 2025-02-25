@@ -1,4 +1,14 @@
 <div class="wrapper">
+    <div>Form Contents: {{ filterForm.value | json }}</div>
+    <form [formGroup]="filterForm" (submit)="getOrdersFromServer()">
+        <label for="orderFilter">Sposób płatności</label>
+        <select id="orderFiler" formControlName="filter">
+            <option value="Kuchnia">Kuchnia</option>
+            <option value="Gotowe">Gotowe</option>
+        </select>
+        <button>Szukaj</button>
+    </form>
+
     <div class="orders">
         @if(orderList.length){
             @for (order of orderList; track order.id){
@@ -8,7 +18,12 @@
                     <p class="order-time">{{order.dateDeliver}}</p>
                     <p class="order-products">{{order.products}}</p>
                     <p class="order-address">{{order.address}}</p>
-                    <button class="order-button" (click)="setOrderReady(order.id)">Gotowe</button>
+                    @if(order.status === 'Kuchnia'){
+                        <button class="order-button" (click)="changeOrderStatus(order.id, $index)">Gotowe</button>
+                    }
+                    @else if(order.status === 'Gotowe'){
+                        <button class="order-button" (click)="changeOrderStatus(order.id, $index)">Cofnij</button>
+                    }
                 </div>
             }
         }
