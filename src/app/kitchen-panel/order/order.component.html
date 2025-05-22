@@ -1,0 +1,32 @@
+<div class="order">
+    <p class="order__time">{{orderGetTime(order.dateDeliver)}}</p>
+    @if(order.type === 'Dostawa'){
+    <p class="order__type order__type-delivery">{{order.type}}</p>
+    <p class="order__address">{{order.address}}</p>
+    }
+    @else if(order.type === 'Odbior'){
+    <p class="order__type order__type-pickup">{{order.type}}</p>
+    }
+    @else if(order.type === 'Sala'){
+    <p class="order__type order__type-table">{{order.type}}</p>
+    }
+
+    @for (product of order.products; track $index){
+    <div class="order__productbox">
+        <p class="order__productinfo">{{product}}</p>
+    </div>
+    }
+
+    @if(order.status === 'Kuchnia'){
+    <div class="order__buttonbox">
+        <button class="button" (click)="sendChangeStatusRequest()">Gotowe</button>
+        <button class="button" (click)="sendEditRequest()">Edytuj</button>
+    </div>
+
+    }
+    @else if(order.status === 'Gotowe'){
+    <div class="order__buttonbox">
+        <button class="button" (click)="sendChangeStatusRequest()">Cofnij</button>
+    </div>
+    }
+</div>

@@ -7,7 +7,7 @@
                 <option value="Kuchnia">Kuchnia</option>
                 <option value="Gotowe">Gotowe</option>
             </select>
-                
+
             <button class="button">Szukaj</button>
         </div>
     </form>
@@ -16,39 +16,8 @@
         @if(orderList){
         @for (order of orderList; track $index){
 
-        <div class="order">
-            <p class="order__time">{{orderGetTime(order.dateDeliver)}}</p>
-            @if(order.type === 'Dostawa'){
-            <p class="order__type order__type-delivery">{{order.type}}</p>
-            <p class="order__address">{{order.address}}</p>
-            }
-            @else if(order.type === 'Odbior'){
-            <p class="order__type order__type-pickup">{{order.type}}</p>
-            }
-            @else if(order.type === 'Sala'){
-            <p class="order__type order__type-table">{{order.type}}</p>
-            }
+        <app-order [order]=orderList[$index] (callEdit)="editOrder($index)" (callChangeStatus)="changeOrderStatus($index)"></app-order>
 
-            @for (product of order.products; track $index){
-            <div class="order__productbox">
-                <p class="order__productinfo">{{product}}</p>
-            </div>
-            }
-            <!-- <p class="order-products">{{order.products}}</p> -->
-
-            @if(order.status === 'Kuchnia'){
-            <div class="order__buttonbox">
-                <button class="button"
-                    (click)="changeOrderStatus($index)">Gotowe</button>
-                <button class="button" (click)="editOrder($index)">Edytuj</button>
-            </div>
-
-            }
-            @else if(order.status === 'Gotowe'){
-            <button class="button" (click)="changeOrderStatus($index)">Cofnij</button>
-            }
-        </div>
-        
         }
         }
         @else{

@@ -6,19 +6,17 @@ import {
   FormGroup,
   FormControl,
   Validators,
-  FormArray,
 } from '@angular/forms';
-import { Timestamp } from 'firebase/firestore';
+import { OrderComponent } from './order/order.component';
 
 @Component({
   selector: 'app-kitchen-panel',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, OrderComponent],
   templateUrl: './kitchen-panel.component.html',
   styleUrl: './kitchen-panel.component.scss',
 })
 export class KitchenPanelComponent {
   @Output() editOrderEmitter = new EventEmitter<IOrder>();
-  // @Input() orderList: IOrder[] = [];
   
   orderList: IOrder[] = [];
   editID: number = -1;
@@ -57,7 +55,4 @@ export class KitchenPanelComponent {
     this.getOrdersFromServer();
   }
 
-  orderGetTime(time: Timestamp){
-    return time?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  }
 }
