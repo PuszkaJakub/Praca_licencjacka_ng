@@ -16,7 +16,6 @@ export class GraphhopperService {
         .append('profile', 'car')
         .append('locale', 'en')
         .append('key', environment.graphHopperApi);
-
       return this.httpClient.get("https://graphhopper.com/api/1/route", { params });
   }
 }

@@ -1,7 +1,6 @@
-import { Component, Output, EventEmitter, Input } from '@angular/core';
-import { Inject, PLATFORM_ID } from '@angular/core';
+import { Component, Output, EventEmitter, Input } from '@angular/core';;
 import { FirebaseService } from '../firebase.service';
-import { MenuPosition, Order, OrderItem } from '../model/class-templates';
+import { IMenuPosition, IOrder, IOrderItem } from '../model/class-templates';
 import {
   ReactiveFormsModule,
   FormGroup,
@@ -10,14 +9,12 @@ import {
 } from '@angular/forms';
 import * as L from 'leaflet';
 
-//TODO - usunac pipe
-import { JsonPipe } from '@angular/common';
+import { Timestamp } from 'firebase/firestore';
 
 @Component({
   selector: 'app-waiter-panel',
   standalone: true,
-  //TODO - usunac pipe
-  imports: [ReactiveFormsModule, JsonPipe],
+  imports: [ReactiveFormsModule],
   templateUrl: './waiter-panel.component.html',
   styleUrl: './waiter-panel.component.scss',
 })
@@ -35,49 +32,45 @@ export class WaiterPanelComponent {
     if (value.length) {
       this.mapShow = true;
       setTimeout(() => {
-        this.initialize();
+        this.initializeMap();
       }, 100);
     }
   }
 
+  orderID: string = '';
   orderTotal: number;
-  menuList: MenuPosition[];
-  orderList: OrderItem[];
+  menuList: IMenuPosition[];
+  orderList: IOrderItem[];
   mapShow: boolean;
   map: any;
 
   constructor(
-    @Inject(PLATFORM_ID) private platformId: Object,
     private firebase: FirebaseService
   ) {
+    this.getMenuFromServer();
     this.orderTotal = 0;
-    const pizzaList = this.getMenuFromServer();
     this.menuList = [];
     this.orderList = [];
     this.mapShow = false;
   }
 
   orderForm = new FormGroup({
-    type: new FormControl('Sala', [Validators.required]),
+    type: new FormControl('', [Validators.required]),
     time: new FormControl('', [Validators.required]),
-    address: new FormControl('', [Validators.required]),
-    payment: new FormControl('Karta', [Validators.required]),
+    address: new FormControl(''),
+    payment: new FormControl('', [Validators.required]),
   });
 
   editItemForm = new FormGroup({
     name: new FormControl('', [Validators.required]),
     price: new FormControl('', [Validators.required]),
-  })
+  });
 
   extraItemForm = new FormGroup({
     price: new FormControl('', [Validators.required]),
-  })
+  });
 
-  private initialize() {
-    const options: L.MapOptions = {
-      center: L.latLng([this.routeInfo[2], this.routeInfo[3]]),
-      zoom: 18,
-    };
+  private initializeMap() {
     const mymap = L.map('leafletmap').setView(
       [this.routeInfo[2], this.routeInfo[3]],
       18
@@ -100,15 +93,59 @@ export class WaiterPanelComponent {
       .openPopup();
   }
 
-  addItemToOrder(event: Event) {
-    const a = event.target as HTMLElement;
-    const dataPrice = a.getAttribute('data-price');
-    const price = dataPrice ? parseInt(dataPrice) : 0;
+  // export interface IMenuPosition {
+  //   name: string;
+  //   number: number;
+  //   category: string;
+  //   price: number;
+  // }
+
+  addItemToOrder(flag: string, index?: number) {
+    if (flag === 'Menu' && index) {
+      this.addMenuItem(index);
+      alert('Dodano produkt z menu do listy zamówienia');
+    } else if (flag === 'Extra') {
+      this.addExtraItem();
+      alert('Dodano inny produkt do listy zamówienia');
+    } else if (flag === 'Delivery') {
+      this.addDelivery();
+      alert('Dodano dostawę do listy zamówienia');
+    } else {
+      alert('Nie udało się dodać produktu listy zamówienia');
+    }
+  }
+
+  addMenuItem(index: number) {
+    if (index >= 0 && index <= this.menuList.length) {
+      this.orderList.push({
+        name: this.menuList[index].number + ' ' + this.menuList[index].name,
+        price: this.menuList[index].price,
+        inEdit: false,
+        type: this.menuList[index].category,
+      });
+    }
+  }
+
+  addExtraItem() {
+    const price: number = parseInt(
+      String(this.extraItemForm.get('price')?.value)
+    );
     this.orderList.push({
-      name: a.innerText,
+      name: 'Inne',
       price: price,
       inEdit: false,
+      type: 'Extra',
     });
+  }
+
+  addDelivery(){
+      this.orderList.push({
+        name: `Dostawa - ${this.orderForm.get('address')?.value}`,
+        price: Math.round(this.routeInfo[0] / 1000) * 3,
+        inEdit: false,
+        type: 'Delivery',
+      });
+      this.mapShow = false;
   }
 
   getOrderTotal() {
@@ -124,12 +161,17 @@ export class WaiterPanelComponent {
   }
 
   editOrderItemStart(index: number) {
-    this.editItemForm.setValue({name: String(this.orderList[index].name), price: String(this.orderList[index].price)})
+    this.editItemForm.setValue({
+      name: String(this.orderList[index].name),
+      price: String(this.orderList[index].price),
+    });
   }
 
   editOrderItemSet(index: number) {
     this.orderList[index].name = String(this.editItemForm.get('name')?.value);
-    this.orderList[index].price = parseInt(String(this.editItemForm.get('price')?.value));
+    this.orderList[index].price = parseInt(
+      String(this.editItemForm.get('price')?.value)
+    );
   }
 
   clearOrder() {
@@ -137,6 +179,14 @@ export class WaiterPanelComponent {
   }
 
   sendOrder() {
+    if (
+      String(this.orderForm.get('type')?.value) === 'Dostawa' &&
+      !this.orderList.some((item) => item.type === 'Delivery')
+    ) {
+      alert('Wybrano dostawę, ale nie znajduje się w zamówieniu');
+      return;
+    }
+
     let orderTime = new Date();
     const timeValue = String(this.orderForm.get('time')?.value);
     if (timeValue) {
@@ -147,30 +197,24 @@ export class WaiterPanelComponent {
       orderTime.setMilliseconds(0);
     }
 
-    let newOrderProducts: string = '';
+    let newOrderProducts: string[] = [];
     this.orderList.forEach((product) => {
-      newOrderProducts += product.name.trim();
-      newOrderProducts += '\n';
+      newOrderProducts.push(product.name.trim());
     });
 
     const newOrder = {
-      id: '',
+      id: this.orderID,
       type: String(this.orderForm.get('type')?.value),
-      dateDeliver: orderTime,
+      dateDeliver: Timestamp.fromDate(orderTime),
       products: newOrderProducts,
       address: String(this.orderForm.get('address')?.value),
       status: 'Kuchnia',
       payment: String(this.orderForm.get('payment')?.value),
     };
+
     this.firebase.addDataOrder(newOrder);
-  }
-  addExtraItemToOrder() {
-    const price: number = parseInt(String(this.extraItemForm.get('price')?.value));
-    if (!isNaN(price) && price != 0) {
-      this.orderList.push({ name: 'Inne', price: price, inEdit: false });
-    } else {
-      alert('Wprowadź wartość');
-    }
+    this.orderForm.reset();
+    this.clearOrder();
   }
 
   searchLocalisation() {
@@ -182,16 +226,6 @@ export class WaiterPanelComponent {
     }
   }
 
-  addDelivery() {
-    const deliveryPrice = (this.routeInfo[0] / 1000) * 3;
-    this.orderList.push({
-      name: `Dostawa - ${this.orderForm.get('address')?.value}`,
-      price: Math.round(this.routeInfo[0] / 1000) * 3,
-      inEdit: false,
-    });
-    this.mapShow = false;
-  }
-
   async getMenuFromServer() {
     const data = await this.firebase.fetchDataMenu();
     this.menuList = data;
@@ -199,5 +233,39 @@ export class WaiterPanelComponent {
 
   isDelivery(): Boolean {
     return String(this.orderForm.get('type')?.value) === 'Dostawa';
+  }
+
+  fillOrderToEdit(order: IOrder) {
+    this.orderID = order.id;
+    this.orderForm.get('type')?.patchValue(order.type);
+    const time = order.dateDeliver.toDate().toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+    this.orderForm.get('time')?.patchValue(time);
+    this.orderForm.get('address')?.patchValue(order.address);
+    this.orderForm.get('payment')?.patchValue(order.payment);
+    if (order.type === 'Dostawa') {
+      this.searchLocalisation();
+    }
+
+    this.clearOrder();
+    for (let product of order.products) {
+      console.log(product.split(' ')[0]);
+      const productNumber = parseFloat(product.split(' ')[0]);
+      const menuItem = this.menuList.find(
+        (item) => item.number == productNumber
+      );
+      if (menuItem) {
+        console.log(menuItem);
+        this.orderList.push({
+          name: product,
+          price: menuItem.price,
+          inEdit: false,
+          type: menuItem.category,
+        });
+      }
+    }
   }
 }

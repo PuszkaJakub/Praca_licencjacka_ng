@@ -1,19 +1,26 @@
 /* You can add global styles to this file, and also import other style files */
 :root {
-	--mint: #adebb3;
+  --mint: #adc2ad;
+  --light-gray: #686969;
+  --dark-gray: #373737;
+  --black: #1f1e1e;
+  --white: #eeeeee;
+  --icon-background: #383a42;
+  --button-red: #6b0b0b;
 }
 
 * {
-	box-sizing: border-box;
-	margin: 0;
-	padding: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	min-height: 100vh;
-	font-family: sans-serif;
-	background-image: linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-family: sans-serif;
+  background-color: var(--mint);
+
 }

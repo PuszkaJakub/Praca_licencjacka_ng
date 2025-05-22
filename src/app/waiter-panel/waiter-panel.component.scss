@@ -1,39 +1,103 @@
-
 .wrapper {
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  width: 90vw;
-  min-width: 350px;
-  padding: 0.2em;
+  width: 95vw;
+  min-width: 90%;
+  padding: 1.5rem 0.2rem;
+  max-width: 1200px;
 }
 
-h1 {
-  text-align: center;
-  font-size: 2rem;
+.section {
+  position: relative;
+  min-width: 80%;
+  margin-bottom: 2rem;
+
+  &__header {
+    position: absolute;
+    border-radius: 16px;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 60%;
+    padding: 0.2rem 2rem;
+    color: #fff;
+    background-color: var(--light-gray);
+
+    h2 {
+      text-align: center;
+      font-size: 2rem;
+    }
+  }
+
+  &__content {
+    background-color: var(--dark-gray);
+    border-radius: 5px;
+    padding: 4rem 0rem 2rem;
+  }
+
+  &__inputbox {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  &__input {
+    margin: 0rem 1rem 1rem;
+    padding: 0.5rem;
+    min-width: 50%;
+    max-width: 50%;
+    border-radius: 16px;
+    background-color: transparent;
+    border: 3px solid var(--light-gray);
+    color: #fff;
+
+    option {
+      color: #333;
+    }
+  }
+
+  label {
+    text-align: center;
+    color: var(--white);
+  }
+
+  &__button {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    text-align: center;
+    background-color: transparent;
+    border: 3px solid var(--mint);
+    font-size: 1.5rem;
+    color: var(--white);
+    transition: background-color 0.3s;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: var(--mint);
+  }
 }
 
-.panel {
+.menu-positions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: repeat(13, 1fr);
   gap: 10px 20px;
   grid-auto-flow: row;
-  padding: 0.5em;
+  padding: 1rem;
 
-  &-item {
-    padding: 0.5em 1em;
-    border-radius: 8px;
+  &__item {
+    padding: 1rem 0.5rem;
+    border-radius: 16px;
     text-align: center;
-    background-color: #fff;
-    border: none;
+    background-color: transparent;
+    border: 3px solid var(--light-gray);
     cursor: pointer;
     transition: background-color 0.3s;
-
-    &:hover {
-      background-color: var(--mint);
-    }
+    color: var(--white);
   }
 }
 
@@ -74,7 +138,7 @@ h1 {
   & label {
     text-align: center;
   }
-  & select{
+  & select {
     width: 18em;
     padding: 1rem;
   }
@@ -89,80 +153,57 @@ h1 {
     width: 18em;
     padding: 1em 0.5em;
   }
-
-  & button {
-    margin: 0.5em 1em;
-    padding: 1em 2em;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    background-color: var(--mint);
-    cursor: pointer;
-  }
 }
 
-.products-list {
-  // position: absolute;
+.productsList {
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  margin: 2em;
-  padding: 2em;
-  color: #333;
-  background-color: #fff;
+  padding: 0rem 0.5rem 2rem;
+  color: var(--white);
 
-  p {
-    display: block;
-    font-size: 1.2rem;
-    text-align: center;
-  }
-
-  &-result {
-    color: rgb(12, 64, 236);
-    margin-bottom: 1em;
-  }
-
-  & li {
+  ul {
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    margin: 2em;
-    text-align: center;
-    list-style: none;
+    min-width: 100%;
+  }
 
-    & hr {
-      width: 100%;
+  &__info {
+    display: block;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    text-align: center;
+
+    &--price{
+      font-weight: bold;
+      color: var(--mint);
+    }
+
+    &--validation{
+      color: var(--mint);
     }
   }
 
-  &-button {
-    padding: 1em 2em;
-    font-size: 1rem;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s, color 0.3s;
+  &__summary{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    margin: 1rem;
+    gap: 0.2rem;
+  }
 
-    &:hover {
-      background-color: #333;
-      color: white;
+  &__buttons{
+    display: flex;
+    gap: 0.5rem;
+
+    button{
+      border: 4px solid var((--mint));
     }
 
-    &-remove {
-      font-size: 0.7rem;
-    }
-
-    &-save {
-      background-color: rgb(12, 64, 236);
-      color: white;
-
-      &:hover {
-        background-color: rgb(97, 129, 255);
-        color: #333;
-      }
-    }
   }
 
   &-visible {
@@ -170,9 +211,93 @@ h1 {
   }
 }
 
+.productItem {
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  grid-template-rows: 1fr;
+  grid-column-gap: 0.5rem;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 0.5rem;
+  padding: 1rem;
+  border-radius: 20px;
+  list-style: none;
+  background-color: var(--black);
 
-#leafletmap {
+  &__editbox {
+    grid-area: 1 / 1 / 2 / 3;
+    width: 100%;
+    justify-self: center;
+    button {
+      justify-self: center;
+    }
+  }
+
+  &__icon {
+    text-align: center;
+    line-height: 5rem;
+    font-size: 3rem;
+    background-color: var(--icon-background);
+  }
+
+  &__content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: column;
+    height: 80%;
+  }
+
+  &__infobox {
+    width: 90%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+    margin-bottom: 0.5rem;
+  }
+
+  &__name {
+    font-size: 1rem;
+    font-weight: bold;
+  }
+
+  &__price {
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--mint);
+  }
+
+  &__buttonbox {
+    width: 80%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__button {
+    font-size: 1rem;
+
+    &--remove {
+      border: 2px solid var(--button-red);
+    }
+
+
+    &--edit {
+      border: 2px solid var(--light-gray);
+    }
+  }
+}
+
+.leafletmap {
   margin: 30px;
   height: 40vh;
   width: 80vw;
+  max-width: 1100px;
+
+  &__buttons {
+    display: flex;
+    gap: 1rem;
+  }
 }

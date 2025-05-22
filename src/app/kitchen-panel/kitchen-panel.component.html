@@ -1,34 +1,58 @@
 <div class="wrapper">
-    <div>Form Contents: {{ filterForm.value | json }}</div>
+    <!-- <div>Form Contents: {{ filterForm.value | json }}</div> -->
     <form [formGroup]="filterForm" (submit)="getOrdersFromServer()">
-        <label for="orderFilter">Sposób płatności</label>
-        <select id="orderFiler" formControlName="filter">
-            <option value="Kuchnia">Kuchnia</option>
-            <option value="Gotowe">Gotowe</option>
-        </select>
-        <button>Szukaj</button>
+        <div class="searchbox">
+            <!-- <label for="orderFilter">Pokaż zamówienia</label> -->
+            <select id="orderFiler" formControlName="filter">
+                <option value="Kuchnia">Kuchnia</option>
+                <option value="Gotowe">Gotowe</option>
+            </select>
+                
+            <button class="button">Szukaj</button>
+        </div>
     </form>
 
     <div class="orders">
-        @if(orderList.length){
-            @for (order of orderList; track order.id){
-        
-                <div class="order">
-                    <p class="order-type">{{order.type}}</p>
-                    <p class="order-time">{{order.dateDeliver}}</p>
-                    <p class="order-products">{{order.products}}</p>
-                    <p class="order-address">{{order.address}}</p>
-                    @if(order.status === 'Kuchnia'){
-                        <button class="order-button" (click)="changeOrderStatus(order.id, $index)">Gotowe</button>
-                    }
-                    @else if(order.status === 'Gotowe'){
-                        <button class="order-button" (click)="changeOrderStatus(order.id, $index)">Cofnij</button>
-                    }
-                </div>
+        @if(orderList){
+        @for (order of orderList; track $index){
+
+        <div class="order">
+            <p class="order__time">{{orderGetTime(order.dateDeliver)}}</p>
+            @if(order.type === 'Dostawa'){
+            <p class="order__type order__type-delivery">{{order.type}}</p>
+            <p class="order__address">{{order.address}}</p>
             }
+            @else if(order.type === 'Odbior'){
+            <p class="order__type order__type-pickup">{{order.type}}</p>
+            }
+            @else if(order.type === 'Sala'){
+            <p class="order__type order__type-table">{{order.type}}</p>
+            }
+
+            @for (product of order.products; track $index){
+            <div class="order__productbox">
+                <p class="order__productinfo">{{product}}</p>
+            </div>
+            }
+            <!-- <p class="order-products">{{order.products}}</p> -->
+
+            @if(order.status === 'Kuchnia'){
+            <div class="order__buttonbox">
+                <button class="button"
+                    (click)="changeOrderStatus($index)">Gotowe</button>
+                <button class="button" (click)="editOrder($index)">Edytuj</button>
+            </div>
+
+            }
+            @else if(order.status === 'Gotowe'){
+            <button class="button" (click)="changeOrderStatus($index)">Cofnij</button>
+            }
+        </div>
+        
+        }
         }
         @else{
-            <p>Brak nowych zamówień</p>
+        <p>Brak nowych zamówień</p>
         }
     </div>
 

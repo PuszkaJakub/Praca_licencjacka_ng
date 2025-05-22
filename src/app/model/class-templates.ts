@@ -1,21 +1,24 @@
-export interface MenuPosition {
+import { Timestamp } from "firebase/firestore";
+
+export interface IMenuPosition {
   name: string;
   number: number;
   category: string;
   price: number;
 }
 
-export interface OrderItem {
+export interface IOrderItem {
   name: string;
   price: number;
   inEdit: boolean;
+  type: string;
 }
 
-export interface Order {
+export interface IOrder {
     id: string;
     type: string;
-    dateDeliver: Date;
-    products: string;
+    dateDeliver: Timestamp;
+    products: string[];
     address: string;
     status: string;
     payment: string;

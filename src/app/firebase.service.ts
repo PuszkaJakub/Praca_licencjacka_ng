@@ -12,9 +12,10 @@ import {
   addDoc,
   doc,
   updateDoc,
-  setDoc
+  setDoc,
+  deleteDoc,
 } from 'firebase/firestore';
-import { Order } from './model/class-templates';
+import { IOrder } from './model/class-templates';
 
 @Injectable({
   providedIn: 'root',
@@ -36,19 +37,18 @@ export class FirebaseService {
         category: element.data()['category'],
         price: element.data()['price'],
       };
-
     });
   }
 
-  async fetchDataOrdersKitchen(status: string): Promise<Order[]> {
+  async fetchDataOrdersKitchen(status: string): Promise<IOrder[]> {
     const q = query(
       collection(this.database, 'Orders'),
       where('status', '==', status)
     );
-    let orderList: Order[] = [];
-    const ala = onSnapshot(q, (querySnapshot) => {
+    let orderList: IOrder[] = [];
+    const a = onSnapshot(q, (querySnapshot) => {
       querySnapshot.docChanges().forEach((change) => {
-        if (change.type === "added") {
+        if (change.type === 'added') {
           const order = {
             id: change.doc.id,
             type: change.doc.data()['type'],
@@ -56,34 +56,63 @@ export class FirebaseService {
             products: change.doc.data()['products'],
             address: change.doc.data()['address'],
             status: change.doc.data()['status'],
-            payment: change.doc.data()['payment']
-          }
-          orderList.push(order)
-      }
-
+            payment: change.doc.data()['payment'],
+          };
+          orderList.push(order);
+        }
       });
-      
-
     });
-    return(orderList)
+    return orderList;
   }
 
-  async addDataOrder(order: Order) {
-    await addDoc(collection(this.database, 'Orders'), 
-    {
-      type: order.type,
-      deteDeliver: order.dateDeliver,
-      products: order.products,
-      address: order.address,
-      status: order.status,
-      payment: order.payment
+  async addDataOrder(order: IOrder) {
+    if (order.id) {
+      await setDoc(doc(this.database, 'Orders', order.id), {
+        type: order.type,
+        dateDeliver: order.dateDeliver,
+        products: order.products,
+        address: order.address,
+        status: order.status,
+        payment: order.payment,
+      });
+    } else {
+      await addDoc(collection(this.database, 'Orders'), {
+        type: order.type,
+        dateDeliver: order.dateDeliver,
+        products: order.products,
+        address: order.address,
+        status: order.status,
+        payment: order.payment,
+      });
     }
-    );
   }
 
-  async setOrderStatus(orderID: string, newStatus: string){
+  async setOrderStatus(orderID: string, newStatus: string) {
     await updateDoc(doc(this.database, 'Orders', orderID), {
-      status: newStatus
-    })
+      status: newStatus,
+    });
+  }
+
+  async deleteOldOrders() {
+    const q = query(
+      collection(this.database, 'Orders'),
+      where('status', '==', 'Gotowe')
+    );
+
+    const a = await getDocs(q);
+    const ordersToDelete = a.docs
+      .filter((element) => {
+        const dateDeliver = element.data()['dateDeliver'];
+        return Date.now() - dateDeliver.toDate().getTime() > 86400000;
+      })
+      .map((element) => {return element.id});
+
+    console.log(ordersToDelete);
+
+    ordersToDelete.forEach(async orderID => {
+      await deleteDoc(doc(this.database, 'Orders', orderID));
+    }
+
+    )
   }
 }
