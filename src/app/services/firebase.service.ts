@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { initializeApp } from 'firebase/app';
-import { environment } from '../environments/environment';
+import { environment } from '../../environments/environment';
 import {
   onSnapshot,
   where,
@@ -15,7 +15,7 @@ import {
   setDoc,
   deleteDoc,
 } from 'firebase/firestore';
-import { IOrder } from './model/class-templates';
+import { IOrder } from '../model/class-templates';
 
 @Injectable({
   providedIn: 'root',
@@ -107,7 +107,6 @@ export class FirebaseService {
       })
       .map((element) => {return element.id});
 
-    console.log(ordersToDelete);
 
     ordersToDelete.forEach(async orderID => {
       await deleteDoc(doc(this.database, 'Orders', orderID));

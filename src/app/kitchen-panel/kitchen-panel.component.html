@@ -1,9 +1,7 @@
 <div class="wrapper">
-    <!-- <div>Form Contents: {{ filterForm.value | json }}</div> -->
     <form [formGroup]="filterForm" (submit)="getOrdersFromServer()">
-        <div class="searchbox">
-            <!-- <label for="orderFilter">Pokaż zamówienia</label> -->
-            <select id="orderFiler" formControlName="filter">
+        <div class="searchbox">>
+            <select id="orderFilter" formControlName="filter">
                 <option value="Kuchnia">Kuchnia</option>
                 <option value="Gotowe">Gotowe</option>
             </select>
@@ -16,13 +14,12 @@
         @if(orderList){
         @for (order of orderList; track $index){
 
-        <app-order [order]=orderList[$index] (callEdit)="editOrder($index)" (callChangeStatus)="changeOrderStatus($index)"></app-order>
-
+        <app-order [order]=orderList[$index] (callChangeStatus)="changeOrderStatus($index)"
+            (callEditOrder)="editOrder($index)"></app-order>
         }
         }
         @else{
         <p>Brak nowych zamówień</p>
         }
     </div>
-
 </div>

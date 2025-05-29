@@ -2,12 +2,11 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { IOrder } from '../../model/class-templates';
 import { Timestamp } from 'firebase/firestore';
 
-
 @Component({
   selector: 'app-order',
   imports: [],
   templateUrl: './order.component.html',
-  styleUrl: './order.component.scss',
+  styleUrl: '../kitchen-panel.component.scss',
 })
 export class OrderComponent {
   @Input() order: IOrder = {
@@ -19,9 +18,8 @@ export class OrderComponent {
     status: '',
     payment: '',
   };
-  @Output() callEdit = new EventEmitter();
+  @Output() callEditOrder = new EventEmitter();
   @Output() callChangeStatus = new EventEmitter();
-
 
   constructor() {}
 
@@ -31,11 +29,11 @@ export class OrderComponent {
       .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
-  sendEditRequest(){
-    this.callEdit.emit();
+  sendEditRequest() {
+    this.callEditOrder.emit();
   }
 
-  sendChangeStatusRequest(){
+  sendChangeStatusRequest() {
     this.callChangeStatus.emit();
   }
 }

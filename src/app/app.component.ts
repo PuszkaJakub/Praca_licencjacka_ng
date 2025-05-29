@@ -1,8 +1,8 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, effect, inject } from '@angular/core';
 import { WaiterPanelComponent } from './waiter-panel/waiter-panel.component';
-import { NominatimService } from './nominatim.service';
-import { GraphhopperService } from './graphhopper.service';
 import { KitchenPanelComponent } from './kitchen-panel/kitchen-panel.component';
+import { NominatimService } from './services/nominatim.service';
+import { GraphhopperService } from './services/graphhopper.service';
 import { IOrder } from './model/class-templates';
 
 @Component({
@@ -16,24 +16,24 @@ export class AppComponent {
   title = 'MozzaNG';
   routeInfo: number[] = [];
   panel: string = 'kitchen';
+  private nominatim = inject(NominatimService);
+  private graphhopper = inject(GraphhopperService);
 
-  constructor(
-    private nominatim: NominatimService,
-    private graphhopper: GraphhopperService
-  ) {}
+  constructor() {}
+
   searchAddress(address: string) {
     this.nominatim.search(address).subscribe((nominatimResponse: any) => {
-      console.log(nominatimResponse);
       if (nominatimResponse !== undefined && nominatimResponse !== null) {
         this.graphhopper
-          .search(`${nominatimResponse[0].lat},${nominatimResponse[0].lon}`)
+          .search(`${nominatimResponse[0]},${nominatimResponse[1]}`)
           .subscribe((graphhopperResponse: any) => {
             console.log(graphhopperResponse);
-            const value: number[] = [];
-            value[0] = parseFloat(graphhopperResponse.paths[0].distance);
-            value[1] = parseFloat(graphhopperResponse.paths[0].time);
-            value[2] = nominatimResponse[0].lat;
-            value[3] = nominatimResponse[0].lon;
+            const value: number[] = [
+              graphhopperResponse[0],
+              graphhopperResponse[1],
+              nominatimResponse[0],
+              nominatimResponse[1],
+            ];
             this.routeInfo = value;
           });
       } else {
@@ -43,11 +43,8 @@ export class AppComponent {
   }
 
   handleOrderEdit(order: IOrder) {
-
-    console.log(order);
     this.waiterPanel.fillOrderToEdit(order);
-
+    alert('Edycja zamówienia\nZostaniesz przekierowany do panelu kelnera');
     this.panel = 'waiter';
-
   }
 }

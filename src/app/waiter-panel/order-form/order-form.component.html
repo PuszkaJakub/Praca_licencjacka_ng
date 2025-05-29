@@ -1,15 +1,4 @@
-<div class="wrapper">
-    <app-menu [menuList]="menuList" (callAddItem)="addItemToOrder($event)"></app-menu>
-    <!-- 
-    <div>Form Contents: {{ orderForm.value | json }}</div>
-    <div>Form Contents: {{ editItemForm.value | json }}</div>
-    <div>Form Contents: {{ extraItemForm.value | json }}</div> -->
-
-    <app-order-form [routeInfo]="routeInfo" [orderList]="orderList" (callSearchAddress)="searchLocalisation($event)"
-        (callAddDelivery)="addItemToOrder($event)" (callRemoveItem)="removeOrderItem($event)"
-        (callSendOrder)="sendOrder($event)"></app-order-form>
-
-    <!-- <form [formGroup]="orderForm" (submit)="sendOrder()">
+<form [formGroup]="orderForm" (submit)="passOrder()">
         <section class="section">
             <div class="section__header">
                 <h2>Opcje zamówienia</h2>
@@ -43,7 +32,7 @@
                 </div>
 
                 <div class="section__inputbox">
-                    @if(isDelivery()){
+                    @if(this.orderForm.get('type')?.value?.toString() === 'Dostawa'){
                     <label for="delivery">🚚 Dostawa - wyszukaj adres: [Miasto Ulica]</label>
                     <input id="delivery" type="text" placeholder="Wpisz adres" formControlName="address"
                         class="section__input">
@@ -52,13 +41,13 @@
                     <div id="leafletmap" class="leafletmap"></div>
 
                     <div class="leafletmap__buttons">
-                        <button type="button"  class="section__button">Dodaj</button>
+                        <button type="button" (click)="passDelivery()" class="section__button">Dodaj</button>
                         <button type="button" (click)="mapShow = false" class="section__button">Anuluj</button>
 
                     </div>
                     }
                     @else{
-                    <button type="button" (click)="searchLocalisation()" class="section__button">Wyszukaj</button>
+                    <button type="button" (click)="sendAddressSearchRequest()" class="section__button">Wyszukaj</button>
                     }
                     }
                 </div>
@@ -146,7 +135,4 @@
                 </div>
             </div>
         </section>
-    </form> -->
-
-
-</div>
+    </form>

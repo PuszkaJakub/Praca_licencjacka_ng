@@ -4,6 +4,6 @@
 </div>
 
 <div class="content">
-    <app-waiter-panel [hidden]="panel!=='waiter'" [routeInfo]="routeInfo" (searchAddress)="searchAddress($event)"></app-waiter-panel>
+    <app-waiter-panel [hidden]="panel!=='waiter'" [routeInfo]="routeInfo" (searchAddress)="searchAddress($event)"  ></app-waiter-panel>
     <app-kitchen-panel [hidden]="panel!=='kitchen'" (editOrderEmitter)="handleOrderEdit($event)"></app-kitchen-panel>
 </div>

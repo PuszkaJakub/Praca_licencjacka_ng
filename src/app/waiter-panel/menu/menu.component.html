@@ -1,0 +1,28 @@
+<section class="section">
+    <div class="section__header">
+        <h2>Pozycje menu</h2>
+    </div>
+    <div class="section__content">
+        <div class="menu-positions">
+            @for (menuItem of menuList; track $index){
+            <button class="menu-positions__item" [attr.data-price]="menuItem.price"
+                [attr.data-category]="menuItem.category" (click)="passMenuItem($index)">
+                {{menuItem.number}} {{menuItem.name}}
+            </button>
+            
+            }
+        </div>
+
+        <form [formGroup]="extraItemForm" class="orderInfo-element" (submit)="passExtraItem()"
+            class="section__inputbox">
+
+            <label for="extra">Inne (zł):</label>
+            <input formControlName="price" type="number" placeholder="Inne" class="section__input">
+
+            <button class="section__button">Dodaj</button>
+
+        </form>
+
+
+    </div>
+</section>
